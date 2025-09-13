@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}الموافقة على المتجر - {{ store.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-check-circle me-2"></i>الموافقة على المتجر
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        أنت على وشك الموافقة على طلب إنشاء المتجر التالي. هذا الإجراء سيسمح لصاحب المتجر بالبدء في استخدام النظام.
+                    </div>
+
+                    <!-- معلومات المتجر -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted">معلومات المتجر</h6>
+                            <p><strong>اسم المتجر:</strong> {{ store.name }}</p>
+                            <p><strong>البريد الإلكتروني:</strong> {{ store.email }}</p>
+                            <p><strong>الهاتف:</strong> {{ store.phone }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted">صاحب المتجر</h6>
+                            <p><strong>الاسم:</strong> {{ store.owner.get_full_name }}</p>
+                            <p><strong>اسم المستخدم:</strong> {{ store.owner.username }}</p>
+                            <p><strong>البريد الإلكتروني:</strong> {{ store.owner.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="text-muted">وصف المتجر</h6>
+                        <p class="border p-3 rounded bg-light">{{ store.description }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="text-muted">العنوان</h6>
+                        <p class="border p-3 rounded bg-light">{{ store.address }}</p>
+                    </div>
+
+                    <!-- نموذج التأكيد -->
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex gap-3 justify-content-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>تأكيد الموافقة
+                            </button>
+                            <a href="{% url 'store_detail_admin' store.id %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-right me-2"></i>إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

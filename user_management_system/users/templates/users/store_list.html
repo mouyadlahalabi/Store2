@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}قائمة المتاجر{% endblock %}
+
+{% block content %}
+<div class="hero-section" style="background: linear-gradient(135deg, var(--olive-green) 0%, var(--dark-olive) 100%); border-radius: 15px; padding: 3rem 1rem; margin-bottom: 2rem;">
+    <h1 class="hero-title">قائمة المتاجر</h1>
+    <p class="hero-subtitle">هنا يمكنك تصفح كل المتاجر المسجلة في النظام</p>
+</div>
+
+<div class="row">
+    {% for store in stores %}
+        <div class="col-md-4">
+            <div class="dashboard-card p-3 mb-4" style="border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                <div class="d-flex align-items-center mb-3">
+                    {% if store.logo %}
+                        <img src="{{ store.logo.url }}" alt="{{ store.name }}" class="user-avatar me-3" style="width:50px; height:50px; object-fit:cover; border-radius:50%;">
+                    {% else %}
+                        <i class="bi bi-shop fs-2 me-3"></i>
+                    {% endif %}
+                    <h5 class="mb-0">{{ store.name }}</h5>
+                </div>
+                <p>{{ store.description|truncatewords:20 }}</p>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'store_detail_admin' store.id %}" class="btn btn-primary">عرض المتجر</a>
+
+                    <form action="{% url 'store_delete' store.id %}" method="post" onsubmit="return confirm('هل أنت متأكد من حذف هذا المتجر؟');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">حذف المتجر</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                لا توجد متاجر حالياً.
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

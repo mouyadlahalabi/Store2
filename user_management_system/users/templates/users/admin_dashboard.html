@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}لوحة تحكم المديرين - نظام إدارة المستخدمين{% endblock %}
+
+{% block content %}
+<!-- Admin Header -->
+<div class="row">
+    <div class="col-12">
+        <div class="dashboard-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-3"><i class="bi bi-gear me-2"></i>لوحة تحكم المديرين</h2>
+                    <p class="lead mb-0">مرحباً {{ user.first_name|default:user.username }}، مدير النظام</p>
+                    <p class="text-muted">إدارة شاملة للمستخدمين والمتاجر والنظام</p>
+                </div>ئ
+                <div class="col-md-4 text-center">
+                    <i class="bi bi-shield-check" style="font-size: 4rem; color: #667eea;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_users }}</div>
+            <div>إجمالي المستخدمين</div>
+            <i class="bi bi-people-fill" style="font-size: 2rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stat-card secondary">
+            <div class="stat-number">{{ total_admins }}</div>
+            <div>المديرين</div>
+            <i class="bi bi-person-gear" style="font-size: 2rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stat-card accent">
+            <div class="stat-number">{{ total_stores }}</div>
+            <div>إجمالي المتاجر</div>
+            <i class="bi bi-shop" style="font-size: 2rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stat-card danger">
+            <div class="stat-number">{{ verified_stores }}</div>
+            <div>المتاجر المتحققة</div>
+            <i class="bi bi-patch-check" style="font-size: 2rem; opacity: 0.3;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- User Types Breakdown -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-pie-chart me-2"></i>توزيع أنواع المستخدمين</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="p-3">
+                            <h4 class="text-primary">{{ total_admins }}</h4>
+                            <small class="text-muted">مديرين</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3">
+                            <h4 class="text-success">{{ total_regular_users }}</h4>
+                            <small class="text-muted">مستخدمين عاديين</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="p-3">
+                            <h4 class="text-info">{{ total_store_owners }}</h4>
+                            <small class="text-muted">أصحاب متاجر</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightning me-2"></i>الإجراءات السريعة</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 mb-3">
+                        <a href="{% url 'manage_users' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-people me-2"></i>إدارة المستخدمين
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{% url 'manage_stores' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-shop me-2"></i>إدارة المتاجر
+                        </a>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <a href="{% url 'store_requests' %}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-clock-history me-2"></i>طلبات المتاجر
+                            {% if pending_stores_count > 0 %}
+                            <span class="badge bg-warning text-dark ms-1">{{ pending_stores_count }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
+                   
+                  
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Users -->
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>المستخدمين الجدد</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>الاسم</th>
+                                    <th>النوع</th>
+                                    <th>تاريخ الانضمام</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in recent_users %}
+                                <tr>
+                                    <td>{{ user.first_name }} {{ user.last_name|default:user.username }}</td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ user.get_user_type_display }}</span>
+                                    </td>
+                                    <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'manage_users' %}" class="btn btn-sm btn-outline-primary">عرض جميع المستخدمين</a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-person-x" style="font-size: 2rem; color: #ccc;"></i>
+                        <p class="text-muted mt-2">لا يوجد مستخدمين جدد</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Stores -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-shop-window me-2"></i>المتاجر الجديدة</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_stores %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>اسم المتجر</th>
+                                    <th>الحالة</th>
+                                    <th>تاريخ الإنشاء</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for store in recent_stores %}
+                                <tr>
+                                    <td>{{ store.name }}</td>
+                                    <td>
+                                        {% if store.is_verified %}
+                                            <span class="badge bg-success">متحقق</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">في انتظار التحقق</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ store.created_at|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'store_list' %}" class="btn btn-sm btn-outline-success">عرض جميع المتاجر</a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-shop" style="font-size: 2rem; color: #ccc;"></i>
+                        <p class="text-muted mt-2">لا يوجد متاجر جديدة</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

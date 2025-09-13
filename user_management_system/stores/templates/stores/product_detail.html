@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">قسم: {{ category.name }}</h2>
+    <div class="row g-4">
+        {% for product in products %}
+            <div class="col-md-3 col-sm-6">
+                <div class="card h-100">
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.price }} ر.س</p>
+                        <a href="{% url 'store:product_detail' product.id %}" class="btn btn-primary btn-sm">التفاصيل</a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>لا توجد منتجات في هذا القسم.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

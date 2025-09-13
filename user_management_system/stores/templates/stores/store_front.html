@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}المتجر{% endblock %}
+
+{% block content %}
+    <!-- Hero Section -->
+    <section class="hero-section text-center" style="background: linear-gradient(135deg, var(--olive-green), var(--dark-olive));">
+        <div class="container">
+            <h1 class="hero-title">مرحبا بك في متجرنا</h1>
+            <p class="hero-subtitle">أفضل المنتجات بأفضل الأسعار</p>
+            <a href="#products" class="btn btn-primary">تصفح المنتجات</a>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="my-5">
+        <div class="container">
+            <h2 class="mb-4 text-center">الأقسام</h2>
+            <div class="row g-4">
+                {% for category in categories %}
+                <div class="col-md-4">
+                    <div class="dashboard-card text-center">
+                        <i class="bi bi-folder2-open fs-1 mb-3"></i>
+                        <h4>{{ category.name }}</h4>
+                        <a href="{% url 'store:category_detail' category.id %}" class="btn btn-outline-primary mt-3">تصفح</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center">لا توجد أقسام بعد.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section id="products" class="my-5">
+        <div class="container">
+            <h2 class="mb-4 text-center">المنتجات</h2>
+            <div class="row g-4">
+                {% for product in products %}
+                <div class="col-md-3 col-sm-6">
+                    <div class="card h-100">
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <p class="card-text">{{ product.price }} ر.س</p>
+                            <a href="{% url 'store:product_detail' product.id %}" class="btn btn-primary btn-sm">التفاصيل</a>
+                            <a href="{% url 'cart:add_to_cart' product.id %}" class="btn btn-secondary btn-sm">أضف للعربة</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center">لا توجد منتجات حاليا.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

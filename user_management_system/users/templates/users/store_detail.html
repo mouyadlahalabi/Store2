@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ store.name }} - تفاصيل المتجر{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Store Header -->
+        <div class="dashboard-card">
+            <div class="row align-items-center">
+                <div class="col-md-2 text-center">
+                    {% if store.logo %}
+                        <img src="{{ store.logo.url }}" alt="شعار {{ store.name }}" class="rounded" style="width: 100px; height: 100px; object-fit: cover;">
+                    {% else %}
+                        <i class="bi bi-shop" style="font-size: 4rem; color: #667eea;"></i>
+                    {% endif %}
+                </div>
+                <div class="col-md-8">
+                    <h2 class="mb-2">{{ store.name }}</h2>
+                    <p class="text-muted mb-2">{{ store.description }}</p>
+                    <div class="d-flex gap-2">
+                        {% if store.is_active %}
+                            <span class="badge bg-success">نشط</span>
+                        {% else %}
+                            <span class="badge bg-danger">غير نشط</span>
+                        {% endif %}
+                        
+                        {% if store.is_verified %}
+                            <span class="badge bg-primary">متحقق منه</span>
+                        {% else %}
+                            <span class="badge bg-warning">في انتظار التحقق</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-2 text-center">
+                    <a href="{% url 'edit_store' %}" class="btn btn-primary">
+                        <i class="bi bi-pencil me-2"></i>تحديث المعلومات
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Store Information -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>معلومات المتجر</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>اسم المتجر:</strong></td>
+                        <td>{{ store.name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>صاحب المتجر:</strong></td>
+                        <td>{{ store.owner.first_name }} {{ store.owner.last_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>تاريخ الإنشاء:</strong></td>
+                        <td>{{ store.created_at|date:"d/m/Y" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>آخر تحديث:</strong></td>
+                        <td>{{ store.updated_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>حالة المتجر:</strong></td>
+                        <td>
+                            {% if store.is_active %}
+                                <span class="badge bg-success">نشط</span>
+                            {% else %}
+                                <span class="badge bg-danger">غير نشط</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>حالة التحقق:</strong></td>
+                        <td>
+                            {% if store.is_verified %}
+                                <span class="badge bg-success">متحقق منه</span>
+                            {% else %}
+                                <span class="badge bg-warning">في انتظار التحقق</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Contact Information -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-telephone me-2"></i>معلومات الاتصال</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>العنوان:</strong></td>
+                        <td>{{ store.address }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>رقم الهاتف:</strong></td>
+                        <td>
+                            <a href="tel:{{ store.phone }}" class="text-decoration-none">
+                                <i class="bi bi-telephone me-1"></i>{{ store.phone }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>البريد الإلكتروني:</strong></td>
+                        <td>
+                            <a href="mailto:{{ store.email }}" class="text-decoration-none">
+                                <i class="bi bi-envelope me-1"></i>{{ store.email }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% if store.website %}
+                    <tr>
+                        <td><strong>الموقع الإلكتروني:</strong></td>
+                        <td>
+                            <a href="{{ store.website }}" target="_blank" class="text-decoration-none">
+                                <i class="bi bi-globe me-1"></i>زيارة الموقع
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Store Description -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-text me-2"></i>وصف المتجر</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ store.description|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>إجراءات المتجر</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'edit_store' %}" class="btn btn-primary w-100">
+                            <i class="bi bi-pencil me-2"></i>تحديث المعلومات
+                        </a>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-speedometer2 me-2"></i>لوحة التحكم
+                        </a>
+                    </div>
+                    
+                    {% if store.website %}
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ store.website }}" target="_blank" class="btn btn-outline-success w-100">
+                            <i class="bi bi-globe me-2"></i>زيارة الموقع
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verification Status -->
+{% if not store.is_verified %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h6 class="alert-heading"><i class="bi bi-exclamation-triangle me-2"></i>متجرك في انتظار التحقق</h6>
+            <p class="mb-0">متجرك حالياً في انتظار المراجعة والتحقق من قبل الإدارة. ستتلقى إشعاراً عند الموافقة على متجرك.</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

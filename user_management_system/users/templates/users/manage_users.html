@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}إدارة المستخدمين - نظام إدارة المستخدمين{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="row">
+    <div class="col-12">
+        <div class="dashboard-card">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-2"><i class="bi bi-people me-2"></i>إدارة المستخدمين</h2>
+                    <p class="text-muted mb-0">عرض وإدارة جميع المستخدمين في النظام</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="{% url 'create_admin' %}" class="btn btn-danger me-2">
+                        <i class="bi bi-person-plus me-1"></i>إنشاء مدير جديد
+                    </a>
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-right me-2"></i>العودة لوحة المديرين
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-table me-2"></i>قائمة المستخدمين</h5>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>الصورة</th>
+                                    <th>الاسم</th>
+                                    <th>اسم المستخدم</th>
+                                    <th>البريد الإلكتروني</th>
+                                    <th>نوع الحساب</th>
+                                    <th>الحالة</th>
+                                    <th>تاريخ الانضمام</th>
+                                    <th>آخر دخول</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        {% if user.profile_picture %}
+                                            <img src="{{ user.profile_picture.url }}" alt="صورة {{ user.username }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% else %}
+                                            <i class="bi bi-person-circle" style="font-size: 2rem; color: #667eea;"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ user.first_name }} {{ user.last_name }}</strong>
+                                        {% if user.phone_number %}
+                                            <br><small class="text-muted">{{ user.phone_number }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.user_type == 'admin' %}
+                                            <span class="badge bg-danger">{{ user.get_user_type_display }}</span>
+                                        {% elif user.user_type == 'store_owner' %}
+                                            <span class="badge bg-info">{{ user.get_user_type_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">{{ user.get_user_type_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if user.is_active %}
+                                            <span class="badge bg-success">نشط</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">غير نشط</span>
+                                        {% endif %}
+                                        
+                                        {% if user.is_verified %}
+                                            <span class="badge bg-primary">متحقق</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">غير متحقق</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if user.last_login %}
+                                            {{ user.last_login|date:"d/m/Y H:i" }}
+                                        {% else %}
+                                            <span class="text-muted">لم يسجل دخول</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-person-x" style="font-size: 4rem; color: #ccc;"></i>
+                        <h5 class="mt-3 text-muted">لا يوجد مستخدمين</h5>
+                        <p class="text-muted">لم يتم العثور على أي مستخدمين في النظام.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="row mt-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h4 class="text-primary">{{ users|length }}</h4>
+                <p class="text-muted mb-0">إجمالي المستخدمين</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h4 class="text-success">
+                    {% for user in users %}
+                        {% if user.user_type == 'admin' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h4>
+                <p class="text-muted mb-0">المديرين</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h4 class="text-info">
+                    {% for user in users %}
+                        {% if user.user_type == 'store_owner' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h4>
+                <p class="text-muted mb-0">أصحاب المتاجر</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h4 class="text-secondary">
+                    {% for user in users %}
+                        {% if user.user_type == 'user' %}{{ forloop.counter0|add:1 }}{% endif %}
+                    {% empty %}0{% endfor %}
+                </h4>
+                <p class="text-muted mb-0">المستخدمين العاديين</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-gear me-2"></i>إجراءات إضافية</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="/admin/users/user/" class="btn btn-outline-primary w-100" target="_blank">
+                            <i class="bi bi-gear me-2"></i>إدارة متقدمة
+                        </a>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'manage_stores' %}" class="btn btn-outline-success w-100">
+                            <i class="bi bi-shop me-2"></i>إدارة المتاجر
+                        </a>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-info w-100">
+                            <i class="bi bi-speedometer2 me-2"></i>لوحة المديرين
+                        </a>
+                    </div>
+                    
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{% url 'register' %}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-person-plus me-2"></i>إضافة مستخدم
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}طلبات المتاجر - نظام إدارة المستخدمين{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-shop me-2"></i>إدارة طلبات المتاجر
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- إحصائيات سريعة -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="stat-card accent">
+                                <div class="stat-number">{{ pending_count }}</div>
+                                <div>طلبات معلقة</div>
+                                <i class="bi bi-clock" style="font-size: 2rem; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ approved_count }}</div>
+                                <div>طلبات موافق عليها</div>
+                                <i class="bi bi-check-circle" style="font-size: 2rem; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stat-card danger">
+                                <div class="stat-number">{{ rejected_count }}</div>
+                                <div>طلبات مرفوضة</div>
+                                <i class="bi bi-x-circle" style="font-size: 2rem; opacity: 0.3;"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- تبويبات الطلبات -->
+                    <ul class="nav nav-tabs" id="storeRequestsTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+                                <i class="bi bi-clock me-2"></i>طلبات معلقة ({{ pending_count }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">
+                                <i class="bi bi-check-circle me-2"></i>موافق عليها ({{ approved_count }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">
+                                <i class="bi bi-x-circle me-2"></i>مرفوضة ({{ rejected_count }})
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="storeRequestsTabContent">
+                        <!-- الطلبات المعلقة -->
+                        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                            {% if pending_stores %}
+                                <div class="row">
+                                    {% for store in pending_stores %}
+                                    <div class="col-lg-6 col-xl-4 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header bg-warning text-dark">
+                                                <h6 class="mb-0">
+                                                    <i class="bi bi-shop me-2"></i>{{ store.name }}
+                                                </h6>
+                                                <small>طلب بتاريخ: {{ store.created_at|date:"d/m/Y H:i" }}</small>
+                                            </div>
+                                            <div class="card-body">
+                                                <p><strong>صاحب المتجر:</strong> {{ store.owner.get_full_name }}</p>
+                                                <p><strong>البريد الإلكتروني:</strong> {{ store.email }}</p>
+                                                <p><strong>الهاتف:</strong> {{ store.phone }}</p>
+                                                <p><strong>العنوان:</strong> {{ store.address|truncatechars:50 }}</p>
+                                                <p class="text-muted">{{ store.description|truncatechars:100 }}</p>
+                                            </div>
+                                            <div class="card-footer">
+                                                <div class="btn-group w-100" role="group">
+                                                    <a href="{% url 'store_detail_admin' store.id %}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-eye me-1"></i>عرض
+                                                    </a>
+                                                    <a href="{% url 'approve_store' store.id %}" class="btn btn-success btn-sm">
+                                                        <i class="bi bi-check me-1"></i>موافقة
+                                                    </a>
+                                                    <a href="{% url 'reject_store' store.id %}" class="btn btn-danger btn-sm">
+                                                        <i class="bi bi-x me-1"></i>رفض
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-inbox display-1 text-muted"></i>
+                                    <h5 class="text-muted mt-3">لا توجد طلبات معلقة</h5>
+                                    <p class="text-muted">جميع طلبات المتاجر تم التعامل معها.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- الطلبات الموافق عليها -->
+                        <div class="tab-pane fade" id="approved" role="tabpanel">
+                            {% if approved_stores %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>اسم المتجر</th>
+                                                <th>صاحب المتجر</th>
+                                                <th>تاريخ الموافقة</th>
+                                                <th>تمت الموافقة بواسطة</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for store in approved_stores %}
+                                            <tr>
+                                                <td>
+                                                    <i class="bi bi-shop text-success me-2"></i>{{ store.name }}
+                                                </td>
+                                                <td>{{ store.owner.get_full_name }}</td>
+                                                <td>{{ store.approval_date|date:"d/m/Y H:i" }}</td>
+                                                <td>{{ store.approved_by.get_full_name }}</td>
+                                                <td>
+                                                    <a href="{% url 'store_detail_admin' store.id %}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-eye me-1"></i>عرض
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-check-circle display-1 text-success"></i>
+                                    <h5 class="text-muted mt-3">لا توجد متاجر موافق عليها</h5>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- الطلبات المرفوضة -->
+                        <div class="tab-pane fade" id="rejected" role="tabpanel">
+                            {% if rejected_stores %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>اسم المتجر</th>
+                                                <th>صاحب المتجر</th>
+                                                <th>تاريخ الرفض</th>
+                                                <th>سبب الرفض</th>
+                                                <th>الإجراءات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for store in rejected_stores %}
+                                            <tr>
+                                                <td>
+                                                    <i class="bi bi-shop text-danger me-2"></i>{{ store.name }}
+                                                </td>
+                                                <td>{{ store.owner.get_full_name }}</td>
+                                                <td>{{ store.approval_date|date:"d/m/Y H:i" }}</td>
+                                                <td>{{ store.rejection_reason|truncatechars:50 }}</td>
+                                                <td>
+                                                    <a href="{% url 'store_detail_admin' store.id %}" class="btn btn-outline-primary btn-sm">
+                                                        <i class="bi bi-eye me-1"></i>عرض
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-5">
+                                    <i class="bi bi-x-circle display-1 text-danger"></i>
+                                    <h5 class="text-muted mt-3">لا توجد متاجر مرفوضة</h5>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
