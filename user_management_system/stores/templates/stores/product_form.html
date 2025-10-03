@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}تعديل المنتج{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <h2>تعديل المنتج: {{ product.name }}</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">حفظ التغييرات</button>
+        <a href="{% url 'stores:category_detail' product.category.id %}" class="btn btn-secondary">إلغاء</a>
+    </form>
+</div>
+{% endblock %}

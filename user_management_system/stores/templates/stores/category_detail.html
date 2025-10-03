@@ -4,34 +4,45 @@
 {% block content %}
 <div class="container my-5">
     <h2 class="mb-4">قسم: {{ category.name }}</h2>
+
     <div class="row g-4">
+
+        <!-- ✅ بطاقة زر إضافة منتج -->
+        <div class="col-md-3 col-sm-6">
+            <div class="card h-100 d-flex align-items-center justify-content-center">
+                <button class="btn btn-outline-success btn-lg" data-bs-toggle="collapse" data-bs-target="#addProductForm" aria-expanded="false" aria-controls="addProductForm">
+                    +
+                </button>
+            </div>
+        </div>
+
+        <!-- ✅ الفورم داخل collapse (يظهر عند الضغط على +) -->
+        <div class="collapse col-12" id="addProductForm">
+            <div class="card card-body mb-4">
+                <h5>إضافة منتج جديد</h5>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-success">حفظ المنتج</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- ✅ عرض المنتجات -->
         {% for product in products %}
             <div class="col-md-3 col-sm-6">
-                <div class="card h-100">{% extends "base.html" %}
-{% block title %}{{ product.name }}{% endblock %}
-
-{% block content %}
-<div class="container my-5">
-    <div class="row">
-        <div class="col-md-6">
-            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
-        </div>
-        <div class="col-md-6">
-            <h2>{{ product.name }}</h2>
-            <p class="text-muted">{{ product.category.name }}</p>
-            <p class="fs-4 fw-bold">{{ product.price }} ر.س</p>
-            <p>{{ product.description }}</p>
-            <a href="#" class="btn btn-primary">أضف إلى السلة</a>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
+                <div class="card h-100">
                     <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text">{{ product.price }} ر.س</p>
-                        <a href="{% url 'store:product_detail' product.id %}" class="btn btn-primary btn-sm">التفاصيل</a>
+                        <p class="card-text">السعر: {{ product.price }} ر.س</p>
+                        <p class="card-text">المتوفر: {{ product.stock }} قطعة</p>
+                        <p class="card-text">المقاسات: {{ product.sizes }}</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-around">
+                        <a href="{% url 'stores:product_detail' product.id %}" class="btn btn-primary btn-sm">التفاصيل</a>
+                        <a href="{% url 'stores:product_edit' product.id %}" class="btn btn-warning btn-sm">تعديل</a>
+                        <a href="{% url 'stores:product_delete' product.id %}" class="btn btn-danger btn-sm">حذف</a>
                     </div>
                 </div>
             </div>

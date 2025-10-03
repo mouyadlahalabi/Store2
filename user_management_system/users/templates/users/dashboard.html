@@ -47,10 +47,10 @@
                         </a>
                     </div>
                     {% if user.is_store_owner %}
-                        {% with store=user.stores.first %}
+                        {% with store=user.store %}
                         <div class="col-lg-3 col-md-6 mb-3">
                             {% if store %}
-                                <a href="{% url 'store_detail' store.id %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                                <a href="{% url 'store_detail'%}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
                                     <i class="bi bi-shop" style="font-size: 2rem;"></i>
                                     <span class="mt-2">إدارة المتجر</span>
                                 </a>
@@ -128,7 +128,7 @@
                 <h5 class="mb-0"><i class="bi bi-shop me-2"></i>معلومات المتجر</h5>
             </div>
             <div class="card-body">
-                {% with store=user.stores.first %}
+                {% with store=user.store %}
                     {% if store %}
                         <table class="table table-borderless">
                             <tr>
@@ -169,8 +169,8 @@
                             </tr>
                         </table>
                         <div class="mt-3">
-                            <a href="{% url 'store_detail' store.id %}" class="btn btn-primary btn-sm me-2">عرض التفاصيل</a>
-                            <a href="{% url 'edit_store' store.id %}" class="btn btn-outline-primary btn-sm">تحديث المعلومات</a>
+                            <a href="{% url 'store_detail' %}" class="btn btn-primary btn-sm me-2">عرض التفاصيل</a>
+                            <a href="{% url 'edit_store'  %}" class="btn btn-outline-primary btn-sm">تحديث المعلومات</a>
                         </div>
                     {% else %}
                         <div class="text-center py-4">
