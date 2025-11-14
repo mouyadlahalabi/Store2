@@ -1,58 +1,203 @@
 {% extends "base.html" %}
+{% load static %}
 
-{% block title %}المتجر{% endblock %}
+{% block title %}{{ store.name }}{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="hero-section text-center" style="background: linear-gradient(135deg, var(--olive-green), var(--dark-olive));">
-    <div class="container">
-        <h1 class="hero-title">مرحبا بك في متجرنا</h1>
-        <p class="hero-subtitle">أفضل المنتجات بأفضل الأسعار</p>
-        <a href="#categories" class="btn btn-primary">تصفح الأقسام</a>
-    </div>
-</section>
+<style>
+    :root {
+        --beige-light: #F5E6D3;
+        --beige-medium: #E8D5C4;
+        --beige-dark: #D4C4B0;
+        --olive-dark: #556B2F;
+        --olive-medium: #6B8E23;
+        --olive-light: #7A8B5A;
+    }
+    
+    .hero-section {
+        background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 100%);
+    }
+    
+    .card {
+        background: var(--beige-medium);
+        border: 1px solid var(--olive-light);
+    }
+    
+    .card-title {
+        color: var(--olive-dark);
+    }
+    
+    .btn-success {
+        background-color: var(--olive-medium);
+        border-color: var(--olive-dark);
+    }
+    
+    .btn-success:hover {
+        background-color: var(--olive-dark);
+        border-color: var(--olive-dark);
+    }
+    
+    h2 {
+        color: var(--olive-dark);
+    }
+    
+    .favorite-btn {
+        font-size: 2rem;
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        padding: 0.5rem;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .favorite-btn:hover {
+        color: #ff6b6b;
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+        text-decoration: none;
+    }
+    
+    .favorite-btn.active {
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.3);
+    }
+</style>
 
-<!-- Categories Section with Carousel -->
-<section id="categories" class="my-5">
-    <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-center">الأقسام</h2>
-            <a href="{% url 'stores:add_category' %}" class="btn btn-success">إضافة قسم</a>
-        </div>
+<script>
+function toggleFavorite(btn, storeId) {
+    fetch(`/store/toggle-favorite/${storeId}/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        const icon = btn.querySelector('i');
+        if (data.is_favorite) {
+            btn.classList.add('active');
+            icon.classList.remove('bi-heart');
+            icon.classList.add('bi-heart-fill');
+            btn.title = 'إزالة من المفضلة';
+        } else {
+            btn.classList.remove('active');
+            icon.classList.remove('bi-heart-fill');
+            icon.classList.add('bi-heart');
+            btn.title = 'إضافة إلى المفضلة';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Fallback to normal redirect
+        window.location.href = btn.href;
+    });
+}
+</script>
 
-        {% if categories %}
-        <div id="categoriesCarousel" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                {% for category in categories %}
-                <div class="carousel-item {% if forloop.first %}active{% endif %}">
-                    <div class="d-flex justify-content-center">
-                        <div class="dashboard-card text-center p-4" style="min-width: 300px;">
-                            <i class="bi bi-folder2-open fs-1 mb-3"></i>
-                            <h4>{{ category.name }}</h4>
-                            <div class="d-flex justify-content-center gap-2 mt-3">
-                                <a href="{% url 'stores:category_detail' category.id %}" class="btn btn-outline-primary btn-sm">تصفح</a>
-                                <form action="{% url 'stores:delete_category' category.id %}" method="post" onsubmit="return confirm('هل أنت متأكد من حذف هذا القسم؟');">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm">حذف</button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            <button class="carousel-control-prev" type="button" data-bs-target="#categoriesCarousel" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">السابق</span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#categoriesCarousel" data-bs-slide="next">
-                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                <span class="visually-hidden">التالي</span>
-            </button>
+<!-- قسم الترحيب مع صورة المتجر الكبيرة -->
+<section class="hero-section text-center text-light position-relative" style="height: 450px;">
+    {% if store.logo %}
+        <div style="position: absolute; top:0; left:0; width:100%; height:100%; overflow:hidden;">
+            <img src="{{ store.logo.url }}" 
+                 alt="{{ store.name }}" 
+                 style="width:100%; height:100%; object-fit:cover; filter: brightness(0.6);">
         </div>
-        {% else %}
-        <p class="text-center">لا توجد أقسام بعد.</p>
+    {% else %}
+        <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(135deg, var(--olive-dark), var(--olive-medium));"></div>
+    {% endif %}
+
+    <div class="container position-relative" style="z-index: 2; top:50%; transform: translateY(-50%);">
+        <div class="d-flex justify-content-center align-items-center gap-3">
+            <h1 class="mb-3">{{ store.name }}</h1>
+            {% if user.is_authenticated and not user.is_store_owner and store.approval_status == 'approved' %}
+                <a href="{% url 'stores:toggle_favorite_store' store.id %}" 
+                   class="favorite-btn {% if is_favorite %}active{% endif %}" 
+                   title="{% if is_favorite %}إزالة من المفضلة{% else %}إضافة إلى المفضلة{% endif %}"
+                   onclick="event.preventDefault(); toggleFavorite(this, {{ store.id }});">
+                    <i class="bi {% if is_favorite %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                </a>
+            {% endif %}
+        </div>
+        <p class="lead">{{ store.description|default:"أفضل المنتجات بأفضل الأسعار" }}</p>
+
+        {% if store.owner == request.user %}
+            <a href="{% url 'stores:add_category' store.id %}" class="btn btn-success btn-lg mt-3">
+                <i class="bi bi-plus-circle"></i> إضافة قسم جديد
+            </a>
         {% endif %}
     </div>
 </section>
+
+<!-- ✅ الأقسام فقط -->
+<section id="categories" class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+        <h2 class="fw-bold" style="color: var(--olive-dark);"><i class="bi bi-grid"></i> الأقسام</h2>
+        {% if all_categories|length > 1 %}
+        <form method="GET" class="d-flex">
+            <select name="category" class="form-select" onchange="this.form.submit()" style="max-width: 250px; background: var(--beige-medium); border: 1px solid var(--olive-light); color: var(--olive-dark);">
+                <option value="">جميع الأقسام</option>
+                {% for cat in all_categories %}
+                <option value="{{ cat.id }}" {% if selected_category == cat.id %}selected{% endif %}>
+                    {{ cat.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if categories %}
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="card shadow-sm h-100 text-center border-0 rounded-4">
+
+                        <div class="card-body">
+
+                            <!-- أيقونة القسم -->
+                            <div class="mb-3">
+                                <i class="bi bi-folder-fill" style="font-size: 2rem; color: var(--olive-medium);"></i>
+                            </div>
+
+                            <h5 class="card-title fw-bold">{{ category.name }}</h5>
+                            <p class="text-muted">{{ category.description|default:"بدون وصف" }}</p>
+
+                            <!-- ✅ الأزرار حسب صلاحية المستخدم -->
+                            {% if request.user.is_superuser %}
+                                <a href="{% url 'stores:delete_category' store.id category.id %}" 
+                                   class="btn btn-outline-danger btn-sm mt-2">
+                                    <i class="bi bi-trash"></i> حذف
+                                </a>
+
+                            {% elif store.owner == request.user %}
+                                <a href="{% url 'stores:category_detail' store.id category.id %}" 
+                                   class="btn btn-outline-warning btn-sm mt-2">
+                                    <i class="bi bi-pencil"></i> تعديل
+                                </a>
+
+                            {% else %}
+                                <a href="{% url 'stores:category_detail' store.id category.id %}" 
+                                   class="btn btn-outline-primary btn-sm mt-2">
+                                    <i class="bi bi-eye"></i> عرض المنتجات
+                                </a>
+
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+    {% else %}
+        <p class="text-center text-muted">لا توجد أقسام بعد.</p>
+    {% endif %}
+</section>
+
 {% endblock %}

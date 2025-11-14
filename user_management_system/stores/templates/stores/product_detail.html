@@ -40,9 +40,9 @@
                         <p class="card-text">المقاسات: {{ product.sizes }}</p>
                     </div>
                     <div class="card-footer d-flex justify-content-around">
-                        <a href="{% url 'stores:product_detail' product.id %}">التفاصيل</a>
-<a href="{% url 'stores:product_edit' product.id %}">تعديل</a>
-<form method="post" action="{% url 'stores:product_delete' product.id %}">
+                        <a href="{% url 'stores:product_detail' store.id  product.id %}">التفاصيل</a>
+<a href="{% url 'stores:product_edit' store.id product.id %}">تعديل</a>
+<form method="post" action="{% url 'stores:product_delete' store.id product.id %}">
     {% csrf_token %}
     <button type="submit">حذف</button>
 </form>

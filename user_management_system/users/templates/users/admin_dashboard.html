@@ -12,7 +12,7 @@
                     <h2 class="mb-3"><i class="bi bi-gear me-2"></i>لوحة تحكم المديرين</h2>
                     <p class="lead mb-0">مرحباً {{ user.first_name|default:user.username }}، مدير النظام</p>
                     <p class="text-muted">إدارة شاملة للمستخدمين والمتاجر والنظام</p>
-                </div>ئ
+                </div>
                 <div class="col-md-4 text-center">
                     <i class="bi bi-shield-check" style="font-size: 4rem; color: #667eea;"></i>
                 </div>
@@ -99,12 +99,12 @@
                         </a>
                     </div>
                     <div class="col-6 mb-3">
-                        <a href="{% url 'manage_stores' %}" class="btn btn-outline-success w-100">
+                        <a href="{% url 'stores:manage_stores' %}" class="btn btn-outline-success w-100">
                             <i class="bi bi-shop me-2"></i>إدارة المتاجر
                         </a>
                     </div>
                     <div class="col-6 mb-3">
-                        <a href="{% url 'store_requests' %}" class="btn btn-outline-warning w-100">
+                        <a href="{% url 'stores:store_requests' %}" class="btn btn-outline-warning w-100">
                             <i class="bi bi-clock-history me-2"></i>طلبات المتاجر
                             {% if pending_stores_count > 0 %}
                             <span class="badge bg-warning text-dark ms-1">{{ pending_stores_count }}</span>
@@ -199,7 +199,7 @@
                         </table>
                     </div>
                     <div class="text-center mt-3">
-                        <a href="{% url 'store_list' %}" class="btn btn-sm btn-outline-success">عرض جميع المتاجر</a>
+                        <a href="{% url 'stores:store_list_user' %}" class="btn btn-sm btn-outline-success">عرض جميع المتاجر</a>
                     </div>
                 {% else %}
                     <div class="text-center py-3">

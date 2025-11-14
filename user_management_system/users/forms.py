@@ -1,7 +1,11 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate
-from .models import User, Store
+from .models import User
+
+
+
+
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -26,7 +30,7 @@ class CustomUserCreationForm(UserCreationForm):
     REGISTRATION_USER_TYPE_CHOICES = [
         ('user', 'مستخدم عادي'),
         ('store_owner', 'صاحب متجر'),
-        ('admin', 'مدير')  # يمكن استخدامه عند إنشاء المدير في view
+        
     ]
     user_type = forms.ChoiceField(
         choices=REGISTRATION_USER_TYPE_CHOICES,
@@ -123,33 +127,33 @@ class UserProfileForm(forms.ModelForm):
         }
 
 
-class StoreCreationForm(forms.ModelForm):
-    """نموذج إنشاء متجر جديد"""
+# class StoreCreationForm(forms.ModelForm):
+#     """نموذج إنشاء متجر جديد"""
 
-    class Meta:
-        model = Store
-        fields = ('name', 'description', 'logo', 'address', 'phone', 'email', 'website')
-        widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
-            'logo': forms.FileInput(attrs={'class': 'form-control'}),
-            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'phone': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'website': forms.URLInput(attrs={'class': 'form-control'}),
-        }
+#     class Meta:
+#         model = Store
+#         fields = ('name', 'description', 'logo', 'address', 'phone', 'email', 'website')
+#         widgets = {
+#             'name': forms.TextInput(attrs={'class': 'form-control'}),
+#             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+#             'logo': forms.FileInput(attrs={'class': 'form-control'}),
+#             'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+#             'phone': forms.TextInput(attrs={'class': 'form-control'}),
+#             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+#             'website': forms.URLInput(attrs={'class': 'form-control'}),
+#         }
 
-    def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
-        super().__init__(*args, **kwargs)
+#     def __init__(self, *args, **kwargs):
+#         self.user = kwargs.pop('user', None)
+#         super().__init__(*args, **kwargs)
 
-    def save(self, commit=True):
-        store = super().save(commit=False)
-        if self.user:
-            store.owner = self.user
-        if commit:
-            store.save()
-        return store
+#     def save(self, commit=True):
+#         store = super().save(commit=False)
+#         if self.user:
+#             store.owner = self.user
+#         if commit:
+#             store.save()
+#         return store
 
 
 class PasswordChangeForm(forms.Form):

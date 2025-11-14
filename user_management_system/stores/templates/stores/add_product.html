@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}إضافة منتج جديد{% endblock %}
+{% block content %}
+<div class="container my-5">
+  <h2>إضافة منتج جديد إلى {{ store.name }}</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">حفظ</button>
+    <a href="{% url 'stores:store_front' store.id %}" class="btn btn-secondary">إلغاء</a>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}المتاجر المفضلة{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --beige-light: #F5E6D3;
+        --beige-medium: #E8D5C4;
+        --beige-dark: #D4C4B0;
+        --olive-dark: #556B2F;
+        --olive-medium: #6B8E23;
+        --olive-light: #7A8B5A;
+    }
+    
+    .favorite-stores-header {
+        background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 100%);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 3rem;
+        border-radius: 0 0 30px 30px;
+        text-align: center;
+    }
+    
+    .store-card {
+        background: var(--beige-medium);
+        border: 1px solid var(--olive-light);
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        box-shadow: 0 5px 15px rgba(85, 107, 47, 0.15);
+    }
+    
+    .store-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(85, 107, 47, 0.25);
+        border-color: var(--olive-medium);
+    }
+    
+    .store-logo-container {
+        height: 250px;
+        overflow: hidden;
+        background: var(--beige-light);
+        position: relative;
+    }
+    
+    .store-logo-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .store-card-body {
+        padding: 1.5rem;
+    }
+    
+    .store-name {
+        color: var(--olive-dark);
+        font-weight: 600;
+        font-size: 1.3rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .store-description {
+        color: #5a5a5a;
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+    
+    .store-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--olive-light);
+        margin-top: 1rem;
+    }
+    
+    .favorite-btn-card {
+        color: #ff6b6b;
+        font-size: 1.5rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        padding: 0.5rem;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 107, 107, 0.1);
+    }
+    
+    .favorite-btn-card:hover {
+        background: rgba(255, 107, 107, 0.2);
+        transform: scale(1.1);
+        color: #ff4757;
+        text-decoration: none;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: var(--beige-medium);
+        border-radius: 15px;
+        border: 2px dashed var(--olive-light);
+    }
+    
+    .empty-state i {
+        font-size: 5rem;
+        color: var(--olive-lighter);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: var(--olive-dark);
+        margin-bottom: 1rem;
+    }
+    
+    .btn-view-store {
+        background: var(--olive-medium);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-view-store:hover {
+        background: var(--olive-dark);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="favorite-stores-header">
+    <div class="container">
+        <h1 class="mb-3">
+            <i class="bi bi-heart-fill"></i> المتاجر المفضلة
+        </h1>
+        <p class="lead">جميع المتاجر التي أضفتها إلى قائمة المفضلة</p>
+        <p class="mb-0">
+            <strong>{{ favorite_count }}</strong> متجر مفضل
+        </p>
+    </div>
+</div>
+
+<div class="container my-5">
+    {% if favorite_stores %}
+        <div class="row g-4">
+            {% for store in favorite_stores %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="store-card">
+                        <div class="store-logo-container">
+                            {% if store.logo %}
+                                <img src="{{ store.logo.url }}" alt="{{ store.name }}">
+                            {% else %}
+                                <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--beige-light) 0%, var(--beige-medium) 100%);">
+                                    <i class="bi bi-shop" style="font-size: 4rem; color: var(--olive-lighter);"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="store-card-body">
+                            <h3 class="store-name">{{ store.name }}</h3>
+                            <p class="store-description">{{ store.description|truncatewords:20 }}</p>
+                            
+                            <div class="store-info">
+                                <a href="{% url 'stores:store_front' store.id %}" class="btn-view-store">
+                                    <i class="bi bi-eye"></i> عرض المتجر
+                                </a>
+                                <a href="{% url 'stores:toggle_favorite_store' store.id %}" 
+                                   class="favorite-btn-card" 
+                                   title="إزالة من المفضلة"
+                                   onclick="event.preventDefault(); removeFavorite(this, {{ store.id }});">
+                                    <i class="bi bi-heart-fill"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="bi bi-heart"></i>
+            <h3>لا توجد متاجر مفضلة</h3>
+            <p class="text-muted mb-4">ابدأ بإضافة المتاجر التي تحبها إلى قائمة المفضلة</p>
+            <a href="{% url 'home' %}" class="btn-view-store">
+                <i class="bi bi-arrow-left"></i> تصفح المتاجر
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function removeFavorite(btn, storeId) {
+    if (confirm('هل أنت متأكد من إزالة هذا المتجر من المفضلة؟')) {
+        fetch(`/store/toggle-favorite/${storeId}/`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (!data.is_favorite) {
+                // إزالة البطاقة من الصفحة
+                btn.closest('.col-md-4').style.transition = 'opacity 0.3s';
+                btn.closest('.col-md-4').style.opacity = '0';
+                setTimeout(() => {
+                    btn.closest('.col-md-4').remove();
+                    // التحقق إذا لم يعد هناك متاجر
+                    if (document.querySelectorAll('.store-card').length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            window.location.href = btn.href;
+        });
+    }
+}
+</script>
+{% endblock %}
+

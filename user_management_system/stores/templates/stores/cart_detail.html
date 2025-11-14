@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2>سلة المشتريات</h2>
+
+    {% if cart.items.all %}
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>المنتج</th>
+                    <th>الكمية</th>
+                    <th>السعر</th>
+                    <th>الإجمالي</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart.items.all %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>
+                        <form method="post" action="{% url 'stores:update_cart_item' item.id %}">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control d-inline-block" style="width:80px;">
+                            <button type="submit" class="btn btn-primary btn-sm">تحديث</button>
+                        </form>
+                    </td>
+                    <td>{{ item.product.price }} ر.س</td>
+                    <td>{{ item.total_price }} ر.س</td>
+                    <td>
+                        <a href="{% url 'stores:remove_from_cart' item.id %}" class="btn btn-danger btn-sm">حذف</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <td colspan="3" class="text-end fw-bold">الإجمالي الكلي:</td>
+                    <td colspan="2" class="fw-bold">{{ cart.total_price }} ر.س</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <a href="#" class="btn btn-success btn-lg">الدفع الآن</a>
+
+    {% else %}
+        <p>السلة فارغة.</p>
+    {% endif %}
+</div>
+{% endblock %}

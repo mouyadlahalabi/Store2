@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}مبيعات {{ store.name }}{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --beige-light: #F5E6D3;
+        --beige-medium: #E8D5C4;
+        --beige-dark: #D4C4B0;
+        --olive-dark: #556B2F;
+        --olive-medium: #6B8E23;
+        --olive-light: #7A8B5A;
+    }
+    
+    .sales-header {
+        color: var(--olive-dark);
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--olive-light);
+    }
+    
+    .table {
+        background: var(--beige-medium);
+    }
+    
+    .table thead {
+        background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 100%);
+        color: white;
+    }
+    
+    .table tbody tr {
+        background: var(--beige-light);
+        transition: background 0.3s ease;
+    }
+    
+    .table tbody tr:hover {
+        background: var(--beige-medium);
+    }
+    
+    .table-bordered {
+        border-color: var(--olive-light) !important;
+    }
+    
+    .table-bordered th,
+    .table-bordered td {
+        border-color: var(--olive-light) !important;
+    }
+</style>
+
+<div class="container my-5">
+    <h2 class="sales-header"><i class="bi bi-bag-check"></i> مبيعات متجر: {{ store.name }}</h2>
+
+    {% if sales %}
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم المنتج</th>
+                    <th>المشتري</th>
+                    <th>الكمية</th>
+                    <th>السعر الإجمالي</th>
+                    <th>تاريخ الشراء</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sale in sales %}
+                {% if sale.product %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ sale.product.name }}</td>
+                    <td>{{ sale.buyer.username }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>{{ sale.total_price }} ر.س</td>
+                    <td>{{ sale.created_at|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p class="text-center text-muted">لا توجد مبيعات حتى الآن.</p>
+    {% endif %}
+</div>
+{% endblock %}

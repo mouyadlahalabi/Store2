@@ -10,7 +10,7 @@
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn btn-success">حفظ التغييرات</button>
-        <a href="{% url 'stores:category_detail' product.category.id %}" class="btn btn-secondary">إلغاء</a>
+        <a href="{% url 'stores:category_detail' store.id product.category.id %}" class="btn btn-secondary">إلغاء</a>
     </form>
 </div>
 {% endblock %}

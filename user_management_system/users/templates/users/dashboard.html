@@ -34,35 +34,49 @@
             </div>
             <div class="card-body">
                 <div class="row">
+
+                    <!-- تحديث الملف الشخصي -->
                     <div class="col-lg-3 col-md-6 mb-3">
                         <a href="{% url 'profile' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
                             <i class="bi bi-person-gear" style="font-size: 2rem;"></i>
                             <span class="mt-2">تحديث الملف الشخصي</span>
                         </a>
                     </div>
+
+                    <!-- تغيير كلمة المرور -->
                     <div class="col-lg-3 col-md-6 mb-3">
                         <a href="{% url 'change_password' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
                             <i class="bi bi-key" style="font-size: 2rem;"></i>
                             <span class="mt-2">تغيير كلمة المرور</span>
                         </a>
                     </div>
+
+                    <!-- متاجر المستخدم -->
                     {% if user.is_store_owner %}
-                        {% with store=user.store %}
-                        <div class="col-lg-3 col-md-6 mb-3">
-                            {% if store %}
-                                <a href="{% url 'store_detail'%}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
-                                    <i class="bi bi-shop" style="font-size: 2rem;"></i>
-                                    <span class="mt-2">إدارة المتجر</span>
-                                </a>
-                            {% else %}
-                                <a href="{% url 'create_store' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
+                        {% if stores %}
+                            {% for store in stores %}
+                                <div class="col-lg-3 col-md-6 mb-3">
+                                    <a href="{% url 'stores:store_detail' store.id %}" 
+                                       class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+                                       style="min-height: 120px;">
+                                        <i class="bi bi-shop" style="font-size: 2rem;"></i>
+                                        <span class="mt-2">{{ store.name }}</span>
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="{% url 'stores:create_store' %}" 
+                                   class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center"
+                                   style="min-height: 120px;">
                                     <i class="bi bi-plus-circle" style="font-size: 2rem;"></i>
                                     <span class="mt-2">إنشاء متجر</span>
                                 </a>
-                            {% endif %}
-                        </div>
-                        {% endwith %}
+                            </div>
+                        {% endif %}
                     {% endif %}
+
+                    <!-- لوحة إدارة النظام -->
                     {% if user.is_admin %}
                         <div class="col-lg-3 col-md-6 mb-3">
                             <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-danger w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="min-height: 120px;">
@@ -86,26 +100,11 @@
             </div>
             <div class="card-body">
                 <table class="table table-borderless">
-                    <tr>
-                        <td><strong>الاسم الكامل:</strong></td>
-                        <td>{{ user.first_name }} {{ user.last_name }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>اسم المستخدم:</strong></td>
-                        <td>{{ user.username }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>البريد الإلكتروني:</strong></td>
-                        <td>{{ user.email }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>رقم الهاتف:</strong></td>
-                        <td>{{ user.phone_number|default:"غير محدد" }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>تاريخ الانضمام:</strong></td>
-                        <td>{{ user.date_joined|date:"d/m/Y" }}</td>
-                    </tr>
+                    <tr><td><strong>الاسم الكامل:</strong></td><td>{{ user.first_name }} {{ user.last_name }}</td></tr>
+                    <tr><td><strong>اسم المستخدم:</strong></td><td>{{ user.username }}</td></tr>
+                    <tr><td><strong>البريد الإلكتروني:</strong></td><td>{{ user.email }}</td></tr>
+                    <tr><td><strong>رقم الهاتف:</strong></td><td>{{ user.phone_number|default:"غير محدد" }}</td></tr>
+                    <tr><td><strong>تاريخ الانضمام:</strong></td><td>{{ user.date_joined|date:"d/m/Y" }}</td></tr>
                     <tr>
                         <td><strong>حالة التحقق:</strong></td>
                         <td>
@@ -121,65 +120,64 @@
         </div>
     </div>
 
+    <!-- Store Info -->
     {% if user.is_store_owner %}
     <div class="col-lg-6">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-shop me-2"></i>معلومات المتجر</h5>
+                <h5 class="mb-0"><i class="bi bi-shop me-2"></i>معلومات المتاجر</h5>
             </div>
             <div class="card-body">
-                {% with store=user.store %}
-                    {% if store %}
-                        <table class="table table-borderless">
-                            <tr>
-                                <td><strong>اسم المتجر:</strong></td>
-                                <td>{{ store.name }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>البريد الإلكتروني:</strong></td>
-                                <td>{{ store.email }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>رقم الهاتف:</strong></td>
-                                <td>{{ store.phone }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>تاريخ الإنشاء:</strong></td>
-                                <td>{{ store.created_at|date:"d/m/Y" }}</td>
-                            </tr>
-                            <tr>
-                                <td><strong>حالة المتجر:</strong></td>
-                                <td>
-                                    {% if store.is_active %}
-                                        <span class="badge bg-success">نشط</span>
-                                    {% else %}
-                                        <span class="badge bg-danger">غير نشط</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td><strong>حالة التحقق:</strong></td>
-                                <td>
-                                    {% if store.is_verified %}
-                                        <span class="badge bg-success">متحقق منه</span>
-                                    {% else %}
-                                        <span class="badge bg-warning">في انتظار التحقق</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        </table>
-                        <div class="mt-3">
-                            <a href="{% url 'store_detail' %}" class="btn btn-primary btn-sm me-2">عرض التفاصيل</a>
-                            <a href="{% url 'edit_store'  %}" class="btn btn-outline-primary btn-sm">تحديث المعلومات</a>
+                {% if stores %}
+                    {% for store in stores %}
+                        <div class="border rounded p-3 mb-3">
+                            <table class="table table-borderless mb-0">
+                                <tr><td><strong>اسم المتجر:</strong></td><td>{{ store.name }}</td></tr>
+                                <tr><td><strong>البريد الإلكتروني:</strong></td><td>{{ store.email }}</td></tr>
+                                <tr><td><strong>رقم الهاتف:</strong></td><td>{{ store.phone }}</td></tr>
+                                <tr><td><strong>تاريخ الإنشاء:</strong></td><td>{{ store.created_at|date:"d/m/Y" }}</td></tr>
+                                <tr>
+                                    <td><strong>الحالة:</strong></td>
+                                    <td>
+                                        {% if store.is_active %}
+                                            <span class="badge bg-success">نشط</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">غير نشط</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>التحقق:</strong></td>
+                                    <td>
+                                        {% if store.is_verified %}
+                                            <span class="badge bg-success">متحقق منه</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">في انتظار التحقق</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="mt-3 d-flex gap-2">
+                                <a href="{% url 'stores:store_detail' store.id %}" class="btn btn-primary btn-sm">عرض التفاصيل</a>
+                                <a href="{% url 'stores:edit_store' store.id %}" class="btn btn-outline-primary btn-sm">تحديث المعلومات</a>
+
+                                <!-- 🔴 زر حذف المتجر -->
+                                <form method="post" action="{% url 'stores:store_delete' store.id %}" onsubmit="return confirm('هل أنت متأكد أنك تريد حذف هذا المتجر؟ لا يمكن التراجع بعد الحذف.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">
+                                        <i class="bi bi-trash"></i> حذف المتجر
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="bi bi-shop" style="font-size: 3rem; color: #ccc;"></i>
-                            <h6 class="mt-3 text-muted">لم تقم بإنشاء متجر بعد</h6>
-                            <a href="{% url 'create_store' %}" class="btn btn-primary mt-2">إنشاء متجر الآن</a>
-                        </div>
-                    {% endif %}
-                {% endwith %}
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-shop" style="font-size: 3rem; color: #ccc;"></i>
+                        <h6 class="mt-3 text-muted">لم تقم بإنشاء متجر بعد</h6>
+                        <a href="{% url 'stores:create_store' %}" class="btn btn-primary mt-2">إنشاء متجر الآن</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

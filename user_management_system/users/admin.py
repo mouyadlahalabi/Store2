@@ -1,7 +1,10 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
-from .models import User, UserProfile, Store
+from .models import User, UserProfile
+
+from stores.models import Store  # ✅ استيراد المتجر من التطبيق الصحيح
+
 
 
 @admin.register(User)

@@ -1,22 +1,220 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}{{ category.name }}{% endblock %}
 
 {% block content %}
+<style>
+    :root {
+        --beige-light: #F5E6D3;
+        --beige-medium: #E8D5C4;
+        --beige-dark: #D4C4B0;
+        --olive-dark: #556B2F;
+        --olive-medium: #6B8E23;
+        --olive-light: #7A8B5A;
+    }
+    
+    .filters-sidebar {
+        background: var(--beige-medium);
+        border: 1px solid var(--olive-light);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-section {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--olive-light);
+    }
+    
+    .filter-section:last-child {
+        border-bottom: none;
+    }
+    
+    .filter-title {
+        color: var(--olive-dark);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+    
+    .filter-btn {
+        background: var(--olive-medium);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        width: 100%;
+        margin-top: 1rem;
+    }
+    
+    .filter-btn:hover {
+        background: var(--olive-dark);
+        color: white;
+    }
+    
+    .size-badge {
+        display: inline-block;
+        padding: 0.3rem 0.8rem;
+        margin: 0.2rem;
+        background: var(--beige-light);
+        border: 1px solid var(--olive-light);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    
+    .size-badge:hover, .size-badge.active {
+        background: var(--olive-medium);
+        color: white;
+        border-color: var(--olive-medium);
+    }
+    
+    .price-input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid var(--olive-light);
+        border-radius: 5px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .sort-select {
+        padding: 0.5rem;
+        border: 1px solid var(--olive-light);
+        border-radius: 5px;
+        background: white;
+        color: var(--olive-dark);
+    }
+</style>
+
 <div class="container my-5">
-    <h2 class="mb-4">قسم: {{ category.name }}</h2>
+    <div class="row">
+        <div class="col-12 mb-4">
+            <h2 style="color: var(--olive-dark);">قسم: {{ category.name }}</h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- 🔹 شريط الفلاتر -->
+        <div class="col-md-3">
+            <div class="filters-sidebar">
+                <h4 class="mb-3" style="color: var(--olive-dark);">
+                    <i class="bi bi-funnel"></i> الفلاتر
+                </h4>
+                
+                <form method="GET" id="filterForm">
+                    <!-- فلتر السعر -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-currency-exchange"></i> السعر
+                        </h6>
+                        <input type="number" name="min_price" class="price-input" 
+                               placeholder="الحد الأدنى" 
+                               value="{{ current_filters.min_price }}"
+                               min="0" step="0.01">
+                        <input type="number" name="max_price" class="price-input" 
+                               placeholder="الحد الأعلى" 
+                               value="{{ current_filters.max_price }}"
+                               min="0" step="0.01">
+                        {% if price_range.min_price %}
+                        <small class="text-muted">
+                            من {{ price_range.min_price|floatformat:2 }} إلى {{ price_range.max_price|floatformat:2 }} ر.س
+                        </small>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- فلتر المقاس -->
+                    {% if all_sizes %}
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-rulers"></i> المقاس
+                        </h6>
+                        <div>
+                            {% for size in all_sizes %}
+                            <span class="size-badge {% if current_filters.size == size %}active{% endif %}" 
+                                  onclick="selectSize('{{ size }}')">
+                                {{ size }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="size" id="sizeInput" value="{{ current_filters.size }}">
+                    </div>
+                    {% endif %}
+                    
+                    <!-- فلتر التوفر -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-check-circle"></i> التوفر
+                        </h6>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="in_stock" 
+                                   id="stock_all" value="" 
+                                   {% if not current_filters.in_stock %}checked{% endif %}>
+                            <label class="form-check-label" for="stock_all">
+                                الكل
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="in_stock" 
+                                   id="stock_available" value="true"
+                                   {% if current_filters.in_stock == 'true' %}checked{% endif %}>
+                            <label class="form-check-label" for="stock_available">
+                                متوفر فقط
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="in_stock" 
+                                   id="stock_unavailable" value="false"
+                                   {% if current_filters.in_stock == 'false' %}checked{% endif %}>
+                            <label class="form-check-label" for="stock_unavailable">
+                                غير متوفر
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- ترتيب -->
+                    <div class="filter-section">
+                        <h6 class="filter-title">
+                            <i class="bi bi-sort-down"></i> الترتيب
+                        </h6>
+                        <select name="sort" class="sort-select" onchange="this.form.submit()">
+                            <option value="created_at" {% if current_filters.sort == 'created_at' %}selected{% endif %}>الأحدث</option>
+                            <option value="price_low" {% if current_filters.sort == 'price_low' %}selected{% endif %}>السعر: من الأقل للأعلى</option>
+                            <option value="price_high" {% if current_filters.sort == 'price_high' %}selected{% endif %}>السعر: من الأعلى للأقل</option>
+                            <option value="name" {% if current_filters.sort == 'name' %}selected{% endif %}>الاسم: أ-ي</option>
+                            <option value="stock" {% if current_filters.sort == 'stock' %}selected{% endif %}>الأكثر توفراً</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="filter-btn">
+                        <i class="bi bi-search"></i> تطبيق الفلاتر
+                    </button>
+                    <a href="{% url 'stores:category_detail' store.id category.id %}" 
+                       class="btn btn-outline-secondary btn-sm mt-2" style="width: 100%;">
+                        <i class="bi bi-x-circle"></i> إعادة تعيين
+                    </a>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 🔹 المنتجات -->
+        <div class="col-md-9">
+            <div class="row g-4">
 
-    <div class="row g-4">
-
-        <!-- ✅ بطاقة زر إضافة منتج -->
+        {% if can_add_product %}
+        <!-- ✅ بطاقة زر إضافة منتج (للصاحب فقط) -->
         <div class="col-md-3 col-sm-6">
             <div class="card h-100 d-flex align-items-center justify-content-center">
-                <button class="btn btn-outline-success btn-lg" data-bs-toggle="collapse" data-bs-target="#addProductForm" aria-expanded="false" aria-controls="addProductForm">
+                <button class="btn btn-outline-success btn-lg"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#addProductForm">
                     +
                 </button>
             </div>
         </div>
 
-        <!-- ✅ الفورم داخل collapse (يظهر عند الضغط على +) -->
+        <!-- ✅ الفورم داخل collapse (للصاحب فقط) -->
         <div class="collapse col-12" id="addProductForm">
             <div class="card card-body mb-4">
                 <h5>إضافة منتج جديد</h5>
@@ -27,28 +225,73 @@
                 </form>
             </div>
         </div>
+        {% endif %}
 
-        <!-- ✅ عرض المنتجات -->
+        <!-- ✅ عرض المنتجات للجميع -->
         {% for product in products %}
             <div class="col-md-3 col-sm-6">
                 <div class="card h-100">
-                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x200?text=No+Image"
+                             class="card-img-top">
+                    {% endif %}
+
                     <div class="card-body text-center">
                         <h5 class="card-title">{{ product.name }}</h5>
                         <p class="card-text">السعر: {{ product.price }} ر.س</p>
                         <p class="card-text">المتوفر: {{ product.stock }} قطعة</p>
                         <p class="card-text">المقاسات: {{ product.sizes }}</p>
                     </div>
+
                     <div class="card-footer d-flex justify-content-around">
-                        <a href="{% url 'stores:product_detail' product.id %}" class="btn btn-primary btn-sm">التفاصيل</a>
-                        <a href="{% url 'stores:product_edit' product.id %}" class="btn btn-warning btn-sm">تعديل</a>
-                        <a href="{% url 'stores:product_delete' product.id %}" class="btn btn-danger btn-sm">حذف</a>
+
+                        {% if can_add_product %}
+                        <!-- ✅ تعديل وحذف وصاحب المتجر يرى التفاصيل -->
+                        <a href="{% url 'stores:product_detail' store.id product.id %}"
+                           class="btn btn-primary btn-sm">التفاصيل</a>
+
+                        <a href="{% url 'stores:product_edit' store.id product.id %}"
+                           class="btn btn-warning btn-sm">تعديل</a>
+
+                        <a href="{% url 'stores:product_delete' store.id product.id %}"
+                           class="btn btn-danger btn-sm">حذف</a>
+
+                        {% else %}
+                        <!-- ✅ المستخدم العادي يرى زر شراء -->
+                        <a href="{% url 'stores:add_to_cart' store.id product.id %}"
+                           class="btn btn-success btn-sm">شراء</a>
+                        {% endif %}
+
                     </div>
                 </div>
             </div>
+
         {% empty %}
-            <p>لا توجد منتجات في هذا القسم.</p>
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> لا توجد منتجات تطابق الفلاتر المحددة.
+                </div>
+            </div>
         {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+    function selectSize(size) {
+        document.getElementById('sizeInput').value = size;
+        // إزالة active من جميع المقاسات
+        document.querySelectorAll('.size-badge').forEach(badge => {
+            badge.classList.remove('active');
+        });
+        // إضافة active للمقاس المحدد
+        event.target.classList.add('active');
+        // إرسال النموذج
+        document.getElementById('filterForm').submit();
+    }
+</script>
 {% endblock %}
