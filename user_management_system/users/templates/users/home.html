@@ -6,23 +6,30 @@
 {% block content %}
 <style>
     :root {
-        --beige-light: #F5E6D3;
-        --beige-medium: #E8D5C4;
-        --beige-dark: #D4C4B0;
-        --beige-darker: #C4B5A0;
+        /* ألوان الكاكاو (الأساسي) */
+        --cocoa-light: #D4A574;
+        --cocoa-medium: #B8865B;
+        --cocoa-dark: #8B6F47;
+        --cocoa-darker: #6B5233;
+        
+        /* ألوان الزيتي (الثانوي) */
         --olive-dark: #556B2F;
         --olive-medium: #6B8E23;
         --olive-light: #7A8B5A;
         --olive-lighter: #8F9779;
         --olive-accent: #9CAF88;
+        
+        /* خلفية فاتحة */
+        --bg-light: #F5E6D3;
+        --bg-medium: #E8D5C4;
     }
     
     .store-products-section {
-        background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 50%, var(--olive-light) 100%);
+        background: linear-gradient(135deg, var(--cocoa-dark) 0%, var(--cocoa-medium) 50%, var(--cocoa-light) 100%);
         padding: 3rem 0;
         margin-bottom: 3rem;
         border-radius: 0 0 30px 30px;
-        box-shadow: 0 5px 20px rgba(85, 107, 47, 0.2);
+        box-shadow: 0 5px 20px rgba(139, 111, 71, 0.2);
     }
     .products-grid {
         display: grid;
@@ -31,7 +38,7 @@
         margin-top: 2rem;
     }
     .product-card {
-        background: var(--beige-medium);
+        background: var(--bg-medium);
         border-radius: 15px;
         overflow: hidden;
         transition: all 0.3s ease;
@@ -39,21 +46,21 @@
         text-decoration: none;
         color: inherit;
         display: block;
-        box-shadow: 0 5px 15px rgba(85, 107, 47, 0.15);
+        box-shadow: 0 5px 15px rgba(139, 111, 71, 0.15);
         height: 100%;
         display: flex;
         flex-direction: column;
-        border: 1px solid var(--olive-light);
+        border: 1px solid var(--cocoa-light);
     }
     .product-card:hover {
         transform: translateY(-8px);
-        box-shadow: 0 10px 25px rgba(85, 107, 47, 0.25);
+        box-shadow: 0 10px 25px rgba(139, 111, 71, 0.25);
         text-decoration: none;
         color: inherit;
-        border-color: var(--olive-medium);
+        border-color: var(--cocoa-dark);
     }
     .store-name-header {
-        background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 100%);
+        background: linear-gradient(135deg, var(--cocoa-dark) 0%, var(--cocoa-medium) 100%);
         color: white;
         padding: 0.75rem 1rem;
         font-weight: 600;
@@ -88,7 +95,7 @@
         width: 100%;
         height: 200px;
         overflow: hidden;
-        background: var(--beige-light);
+        background: var(--bg-light);
         position: relative;
     }
     .product-image {
@@ -110,7 +117,7 @@
         font-size: 1rem;
         font-weight: 600;
         margin: 0 0 0.5rem 0;
-        color: var(--olive-dark);
+        color: var(--cocoa-dark);
         line-height: 1.4;
         min-height: 2.8rem;
     }
@@ -131,11 +138,11 @@
         align-items: center;
         margin-top: auto;
         padding-top: 0.75rem;
-        border-top: 1px solid var(--olive-light);
+        border-top: 1px solid var(--cocoa-light);
     }
     .product-price {
         font-size: 1.1rem;
-        color: var(--olive-dark);
+        color: var(--cocoa-dark);
         font-weight: 700;
         margin: 0;
     }
@@ -158,11 +165,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(135deg, var(--beige-light) 0%, var(--beige-medium) 100%);
+        background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
     }
     .no-image-placeholder i {
         font-size: 4rem;
-        color: var(--olive-lighter);
+        color: var(--cocoa-light);
     }
     .product-image-container {
         cursor: pointer;
@@ -230,12 +237,12 @@
         <div class="row mb-4">
             <div class="col-md-8">
                 <h2 class="section-title mb-0">
-                    <i class="bi bi-star-fill"></i> منتجات مميزة من متاجرنا
+                    <i class="bi bi-star-fill"></i> 
                 </h2>
             </div>
             <div class="col-md-4">
                 <form method="GET" class="d-flex">
-                    <select name="store" class="form-select" onchange="this.form.submit()" style="background: white; border: 2px solid rgba(255,255,255,0.3); color: var(--olive-dark);">
+                    <select name="store" class="form-select" onchange="this.form.submit()" style="background: white; border: 2px solid rgba(255,255,255,0.3); color: var(--cocoa-dark);">
                         <option value="">جميع المتاجر</option>
                         {% for store in all_stores %}
                         <option value="{{ store.id }}" {% if selected_store == store.id %}selected{% endif %}>
@@ -320,7 +327,7 @@
 
 <!-- قسم قائمة المتاجر (اختياري - يمكن إزالته إذا لم تكن هناك حاجة) -->
 <div class="container mt-5">
-    <h2 class="text-center mb-5" style="color: var(--olive-dark);"><i class="bi bi-shop"></i> جميع المتاجر المتاحة</h2>
+    <h2 class="text-center mb-5" style="color: var(--cocoa-dark);"><i class="bi bi-shop"></i> جميع المتاجر المتاحة</h2>
     
     {% if store_products %}
         <div class="row">
@@ -340,7 +347,7 @@
                             <p><strong>المالك:</strong> {{ store.owner.username }}</p>
                         </div>
 
-                        <div class="card-footer text-center" style="background: var(--beige-light);">
+                        <div class="card-footer text-center" style="background: var(--bg-light);">
                             <a href="{% url 'stores:store_front' store.id %}" class="btn btn-outline-primary btn-sm me-2">
                                 <i class="bi bi-grid-3x3-gap"></i> عرض الأقسام
                             </a>

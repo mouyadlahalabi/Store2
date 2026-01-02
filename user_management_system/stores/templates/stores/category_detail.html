@@ -6,17 +6,25 @@
 {% block content %}
 <style>
     :root {
-        --beige-light: #F5E6D3;
-        --beige-medium: #E8D5C4;
-        --beige-dark: #D4C4B0;
+        /* ألوان الكاكاو (الأساسي) */
+        --cocoa-light: #D4A574;
+        --cocoa-medium: #B8865B;
+        --cocoa-dark: #8B6F47;
+        --cocoa-darker: #6B5233;
+        
+        /* ألوان الزيتي (الثانوي) */
         --olive-dark: #556B2F;
         --olive-medium: #6B8E23;
         --olive-light: #7A8B5A;
+        
+        /* خلفية فاتحة */
+        --bg-light: #F5E6D3;
+        --bg-medium: #E8D5C4;
     }
     
     .filters-sidebar {
-        background: var(--beige-medium);
-        border: 1px solid var(--olive-light);
+        background: var(--bg-medium);
+        border: 1px solid var(--cocoa-light);
         border-radius: 15px;
         padding: 1.5rem;
         margin-bottom: 2rem;
@@ -25,7 +33,7 @@
     .filter-section {
         margin-bottom: 1.5rem;
         padding-bottom: 1.5rem;
-        border-bottom: 1px solid var(--olive-light);
+        border-bottom: 1px solid var(--cocoa-light);
     }
     
     .filter-section:last-child {
@@ -33,7 +41,7 @@
     }
     
     .filter-title {
-        color: var(--olive-dark);
+        color: var(--cocoa-dark);
         font-weight: 600;
         margin-bottom: 1rem;
         font-size: 1.1rem;
@@ -58,8 +66,8 @@
         display: inline-block;
         padding: 0.3rem 0.8rem;
         margin: 0.2rem;
-        background: var(--beige-light);
-        border: 1px solid var(--olive-light);
+        background: var(--bg-light);
+        border: 1px solid var(--cocoa-light);
         border-radius: 5px;
         cursor: pointer;
         transition: all 0.3s;
@@ -74,24 +82,24 @@
     .price-input {
         width: 100%;
         padding: 0.5rem;
-        border: 1px solid var(--olive-light);
+        border: 1px solid var(--cocoa-light);
         border-radius: 5px;
         margin-bottom: 0.5rem;
     }
     
     .sort-select {
         padding: 0.5rem;
-        border: 1px solid var(--olive-light);
+        border: 1px solid var(--cocoa-light);
         border-radius: 5px;
         background: white;
-        color: var(--olive-dark);
+        color: var(--cocoa-dark);
     }
 </style>
 
 <div class="container my-5">
     <div class="row">
         <div class="col-12 mb-4">
-            <h2 style="color: var(--olive-dark);">قسم: {{ category.name }}</h2>
+            <h2 style="color: var(--cocoa-dark);">قسم: {{ category.name }}</h2>
         </div>
     </div>
     
@@ -99,7 +107,7 @@
         <!-- 🔹 شريط الفلاتر -->
         <div class="col-md-3">
             <div class="filters-sidebar">
-                <h4 class="mb-3" style="color: var(--olive-dark);">
+                <h4 class="mb-3" style="color: var(--cocoa-dark);">
                     <i class="bi bi-funnel"></i> الفلاتر
                 </h4>
                 
@@ -261,8 +269,12 @@
 
                         {% else %}
                         <!-- ✅ المستخدم العادي يرى زر شراء -->
-                        <a href="{% url 'stores:add_to_cart' store.id product.id %}"
+                        {% if product.stock > 0 %}
+                        <a href="{% url 'stores:purchase_product' store.id product.id %}"
                            class="btn btn-success btn-sm">شراء</a>
+                        {% else %}
+                        <span class="btn btn-secondary btn-sm disabled">غير متوفر</span>
+                        {% endif %}
                         {% endif %}
 
                     </div>

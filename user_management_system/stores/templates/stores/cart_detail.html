@@ -9,6 +9,7 @@
             <thead>
                 <tr>
                     <th>المنتج</th>
+                    <th>المقاس</th>
                     <th>الكمية</th>
                     <th>السعر</th>
                     <th>الإجمالي</th>
@@ -18,29 +19,85 @@
             <tbody>
                 {% for item in cart.items.all %}
                 <tr>
-                    <td>{{ item.product.name }}</td>
+                    <td>
+                        <strong>{{ item.product.name }}</strong>
+                        {% if item.product.category %}
+                        <br><small class="text-muted">{{ item.product.category.name }}</small>
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        {% if item.size %}
+                            <span class="badge bg-primary">{{ item.size }}</span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+
                     <td>
                         <form method="post" action="{% url 'stores:update_cart_item' item.id %}">
                             {% csrf_token %}
-                            <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="form-control d-inline-block" style="width:80px;">
+
+                            {% if item.size %}
+                                {% for ss in item.product.size_stocks.all %}
+                                    {% if ss.size == item.size %}
+                                        <input type="number" 
+                                               name="quantity" 
+                                               value="{{ item.quantity }}" 
+                                               min="1" 
+                                               max="{{ ss.stock }}" 
+                                               class="form-control d-inline-block" 
+                                               style="width:80px;" 
+                                               title="الكمية المتاحة: {{ ss.stock }}">
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                <input type="number" 
+                                       name="quantity" 
+                                       value="{{ item.quantity }}" 
+                                       min="1" 
+                                       max="{{ item.product.stock }}" 
+                                       class="form-control d-inline-block" 
+                                       style="width:80px;">
+                            {% endif %}
+
                             <button type="submit" class="btn btn-primary btn-sm">تحديث</button>
                         </form>
+
+                        {% if item.size %}
+                            {% for ss in item.product.size_stocks.all %}
+                                {% if ss.size == item.size %}
+                                    <small class="text-muted d-block">المتاح: {{ ss.stock }}</small>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <small class="text-muted d-block">المتاح: {{ item.product.stock }}</small>
+                        {% endif %}
                     </td>
+
                     <td>{{ item.product.price }} ر.س</td>
                     <td>{{ item.total_price }} ر.س</td>
+
                     <td>
                         <a href="{% url 'stores:remove_from_cart' item.id %}" class="btn btn-danger btn-sm">حذف</a>
                     </td>
                 </tr>
                 {% endfor %}
+
                 <tr>
                     <td colspan="3" class="text-end fw-bold">الإجمالي الكلي:</td>
                     <td colspan="2" class="fw-bold">{{ cart.total_price }} ر.س</td>
                 </tr>
+
             </tbody>
         </table>
 
-        <a href="#" class="btn btn-success btn-lg">الدفع الآن</a>
+        <form method="post" action="{% url 'stores:checkout' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('هل أنت متأكد من إتمام الشراء؟');">
+                <i class="bi bi-credit-card"></i> الدفع الآن
+            </button>
+        </form>
 
     {% else %}
         <p>السلة فارغة.</p>

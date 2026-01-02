@@ -1,88 +1,321 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}مبيعات {{ store.name }}{% endblock %}
+{% block title %}سجل المبيعات - {{ store.name }}{% endblock %}
 
 {% block content %}
 <style>
     :root {
-        --beige-light: #F5E6D3;
-        --beige-medium: #E8D5C4;
-        --beige-dark: #D4C4B0;
+        /* ألوان الكاكاو (الأساسي) */
+        --cocoa-light: #D4A574;
+        --cocoa-medium: #B8865B;
+        --cocoa-dark: #8B6F47;
+        --cocoa-darker: #6B5233;
+        
+        /* ألوان الزيتي (الثانوي) */
         --olive-dark: #556B2F;
         --olive-medium: #6B8E23;
         --olive-light: #7A8B5A;
+        
+        /* خلفية فاتحة */
+        --bg-light: #F5E6D3;
+        --bg-medium: #E8D5C4;
     }
     
     .sales-header {
-        color: var(--olive-dark);
+        color: var(--cocoa-dark);
         margin-bottom: 2rem;
         padding-bottom: 1rem;
-        border-bottom: 2px solid var(--olive-light);
+        border-bottom: 2px solid var(--cocoa-light);
+    }
+    
+    .stats-card {
+        background: var(--bg-medium);
+        border: 1px solid var(--cocoa-light);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 2px 8px rgba(139, 111, 71, 0.1);
+    }
+    
+    .stats-card h5 {
+        color: var(--cocoa-dark);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+    
+    .stats-card .stat-value {
+        color: var(--cocoa-darker);
+        font-size: 1.8rem;
+        font-weight: 700;
+    }
+    
+    .filter-section {
+        background: var(--bg-medium);
+        border: 1px solid var(--cocoa-light);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
     }
     
     .table {
-        background: var(--beige-medium);
+        background: white;
     }
     
     .table thead {
-        background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 100%);
+        background: linear-gradient(135deg, var(--cocoa-dark) 0%, var(--cocoa-medium) 100%);
         color: white;
     }
     
     .table tbody tr {
-        background: var(--beige-light);
         transition: background 0.3s ease;
     }
     
     .table tbody tr:hover {
-        background: var(--beige-medium);
+        background-color: rgba(184, 134, 91, 0.1);
     }
     
     .table-bordered {
-        border-color: var(--olive-light) !important;
+        border-color: var(--cocoa-light) !important;
     }
     
     .table-bordered th,
     .table-bordered td {
-        border-color: var(--olive-light) !important;
+        border-color: var(--cocoa-light) !important;
+    }
+    
+    .stats-section {
+        background: var(--bg-light);
+        border: 1px solid var(--cocoa-light);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stats-section h4 {
+        color: var(--cocoa-dark);
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+    
+    .product-stat-item {
+        padding: 0.75rem;
+        margin-bottom: 0.5rem;
+        background: white;
+        border-left: 3px solid var(--cocoa-dark);
+        border-radius: 5px;
+    }
+    
+    .badge-custom {
+        background-color: var(--olive-medium);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 5px;
+        font-size: 0.85rem;
     }
 </style>
 
 <div class="container my-5">
-    <h2 class="sales-header"><i class="bi bi-bag-check"></i> مبيعات متجر: {{ store.name }}</h2>
-
-    {% if sales %}
-    <div class="table-responsive">
-        <table class="table table-striped table-bordered">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>اسم المنتج</th>
-                    <th>المشتري</th>
-                    <th>الكمية</th>
-                    <th>السعر الإجمالي</th>
-                    <th>تاريخ الشراء</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for sale in sales %}
-                {% if sale.product %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ sale.product.name }}</td>
-                    <td>{{ sale.buyer.username }}</td>
-                    <td>{{ sale.quantity }}</td>
-                    <td>{{ sale.total_price }} ر.س</td>
-                    <td>{{ sale.created_at|date:"d/m/Y H:i" }}</td>
-                </tr>
-                {% endif %}
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="sales-header">
+            <i class="bi bi-receipt-cutoff"></i> سجل المبيعات - {{ store.name }}
+        </h2>
+        <a href="{% url 'stores:my_store_front' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-right"></i> العودة للمتجر
+        </a>
     </div>
-    {% else %}
-        <p class="text-center text-muted">لا توجد مبيعات حتى الآن.</p>
+
+    <!-- إحصائيات إجمالية -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h5><i class="bi bi-bag-check"></i> إجمالي المبيعات</h5>
+                <div class="stat-value">{{ total_sales_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h5><i class="bi bi-currency-exchange"></i> إجمالي الإيرادات</h5>
+                <div class="stat-value">{{ total_revenue|floatformat:2 }} ر.س</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h5><i class="bi bi-graph-up"></i> متوسط قيمة المبيعة</h5>
+                <div class="stat-value">{{ average_sale|floatformat:2 }} ر.س</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <h5><i class="bi bi-shop"></i> عدد المنتجات المباعة</h5>
+                <div class="stat-value">{{ product_stats|length }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- فلترة حسب التاريخ -->
+    <div class="filter-section">
+        <h5 class="mb-3" style="color: var(--cocoa-dark);">
+            <i class="bi bi-funnel"></i> فلترة المبيعات
+        </h5>
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label for="date_from" class="form-label">من تاريخ</label>
+                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ date_from }}">
+            </div>
+            <div class="col-md-4">
+                <label for="date_to" class="form-label">إلى تاريخ</label>
+                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ date_to }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="bi bi-search"></i> بحث
+                </button>
+                <a href="{% url 'stores:store_sales' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> إعادة تعيين
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- إحصائيات حسب المنتج -->
+    {% if product_stats %}
+    <div class="stats-section">
+        <h4><i class="bi bi-trophy"></i> أفضل المنتجات مبيعاً</h4>
+        <div class="row">
+            {% for stat in product_stats %}
+            <div class="col-md-6 mb-2">
+                <div class="product-stat-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ stat.product__name }}</strong>
+                            <br>
+                            <small class="text-muted">الكمية المباعة: {{ stat.total_quantity }}</small>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge-custom">{{ stat.total_revenue|floatformat:2 }} ر.س</span>
+                            <br>
+                            <small class="text-muted">{{ stat.sale_count }} عملية بيع</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- جدول المبيعات -->
+    <div class="card shadow-sm">
+        <div class="card-header" style="background: linear-gradient(135deg, var(--cocoa-dark) 0%, var(--cocoa-medium) 100%); color: white;">
+            <h5 class="mb-0"><i class="bi bi-list-ul"></i> سجل المبيعات التفصيلي</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if sales %}
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>اسم المنتج</th>
+                            <th>المقاس</th>
+                            <th>المشتري</th>
+                            <th>الكمية</th>
+                            <th>سعر الوحدة</th>
+                            <th>السعر الإجمالي</th>
+                            <th>تاريخ الشراء</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sale in sales %}
+                        {% if sale.product %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ sale.product.name }}</strong>
+                                {% if sale.product.category %}
+                                <br><small class="text-muted">{{ sale.product.category.name }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sale.size %}
+                                    <span class="badge bg-info">{{ sale.size }}</span>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ sale.buyer.username }}</td>
+                            <td><span class="badge bg-primary">{{ sale.quantity }}</span></td>
+                            <td>{{ sale.price }} ر.س</td>
+                            <td><strong>{{ sale.total_price }} ر.س</strong></td>
+                            <td>{{ sale.created_at|date:"d/m/Y H:i" }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background-color: var(--bg-medium);">
+                            <td colspan="5" class="text-end fw-bold">الإجمالي:</td>
+                            <td colspan="2" class="fw-bold">{{ total_revenue|floatformat:2 }} ر.س</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center p-5">
+                <i class="bi bi-inbox" style="font-size: 4rem; color: var(--cocoa-light);"></i>
+                <p class="text-muted mt-3">لا توجد مبيعات حتى الآن.</p>
+                {% if date_from or date_to %}
+                <a href="{% url 'stores:store_sales' %}" class="btn btn-outline-primary">
+                    عرض جميع المبيعات
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- إحصائيات إضافية -->
+    {% if monthly_stats %}
+    <div class="stats-section mt-4">
+        <h4><i class="bi bi-calendar3"></i> المبيعات حسب الشهر</h4>
+        <div class="row">
+            {% for stat in monthly_stats %}
+            <div class="col-md-3 mb-3">
+                <div class="stats-card text-center">
+                    <h5>{{ stat.month|date:"M Y" }}</h5>
+                    <div class="stat-value" style="font-size: 1.3rem;">{{ stat.total_revenue|floatformat:2 }} ر.س</div>
+                    <small class="text-muted">{{ stat.total_count }} عملية بيع</small>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if buyer_stats %}
+    <div class="stats-section mt-4">
+        <h4><i class="bi bi-people"></i> أفضل المشترين</h4>
+        <div class="row">
+            {% for stat in buyer_stats %}
+            <div class="col-md-6 mb-2">
+                <div class="product-stat-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>{{ stat.buyer__username }}</strong>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge-custom">{{ stat.total_purchases|floatformat:2 }} ر.س</span>
+                            <br>
+                            <small class="text-muted">{{ stat.purchase_count }} عملية شراء</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

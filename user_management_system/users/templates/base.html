@@ -14,57 +14,65 @@
     
     <style>
         :root {
-            --beige-light: #F5E6D3;
-            --beige-medium: #E8D5C4;
-            --beige-dark: #D4C4B0;
-            --beige-darker: #C4B5A0;
+            /* ألوان الكاكاو (الأساسي) */
+            --cocoa-light: #D4A574;
+            --cocoa-medium: #B8865B;
+            --cocoa-dark: #8B6F47;
+            --cocoa-darker: #6B5233;
+            --cocoa-darkest: #4A3623;
+            
+            /* ألوان الزيتي (الثانوي) */
             --olive-dark: #556B2F;
             --olive-medium: #6B8E23;
             --olive-light: #7A8B5A;
             --olive-lighter: #8F9779;
             --olive-accent: #9CAF88;
+            
+            /* خلفية فاتحة */
+            --bg-light: #F5E6D3;
+            --bg-medium: #E8D5C4;
         }
         
         body { 
             font-family: 'Cairo', sans-serif; 
-            background: var(--beige-light);
+            background: var(--bg-light);
             color: #3d3d3d;
         }
         
         .navbar { 
-            background: linear-gradient(135deg, var(--beige-medium) 0%, var(--beige-dark) 100%);
-            box-shadow: 0 2px 10px rgba(85, 107, 47, 0.1);
+            background: linear-gradient(135deg, var(--cocoa-medium) 0%, var(--cocoa-dark) 100%);
+            box-shadow: 0 2px 10px rgba(107, 142, 35, 0.1);
             border-bottom: 2px solid var(--olive-light);
         }
         
         .navbar-brand { 
             font-weight: 700; 
-            color: var(--olive-dark) !important;
+            color: white !important;
         }
         
         .nav-link {
-            color: var(--olive-dark) !important;
+            color: white !important;
             font-weight: 500;
             transition: all 0.3s ease;
         }
         
         .nav-link:hover {
-            color: var(--olive-medium) !important;
-            background-color: rgba(107, 142, 35, 0.1);
+            color: var(--olive-lighter) !important;
+            background-color: rgba(107, 142, 35, 0.2);
             border-radius: 5px;
         }
         
         .dropdown-menu {
-            background: var(--beige-medium);
-            border: 1px solid var(--olive-light);
+            background: var(--bg-medium);
+            border: 1px solid var(--cocoa-light);
         }
         
         .dropdown-item {
-            color: var(--olive-dark);
+            color: var(--cocoa-dark);
         }
         
         .dropdown-item:hover {
-            background-color: var(--olive-accent);
+            background-color: var(--olive-medium);
             color: white;
         }
         
@@ -90,35 +98,133 @@
             background-color: var(--olive-dark) !important;
         }
         
+        .badge.bg-primary {
+            background-color: var(--cocoa-dark) !important;
+        }
+        
+        .badge.bg-warning {
+            background-color: var(--cocoa-medium) !important;
+        }
+        
+        /* الأزرار الأساسية - الكاكاو */
         .btn-primary {
-            background-color: var(--olive-medium);
-            border-color: var(--olive-dark);
+            background-color: var(--cocoa-dark);
+            border-color: var(--cocoa-darker);
             color: white;
         }
         
         .btn-primary:hover {
-            background-color: var(--olive-dark);
-            border-color: var(--olive-dark);
+            background-color: var(--cocoa-darker);
+            border-color: var(--cocoa-darkest);
+            color: white;
         }
         
         .btn-outline-primary {
+            color: var(--cocoa-dark);
+            border-color: var(--cocoa-dark);
+        }
+        
+        .btn-outline-primary:hover {
+            background-color: var(--cocoa-dark);
+            border-color: var(--cocoa-dark);
+            color: white;
+        }
+        
+        /* الأزرار الثانوية - الزيتي */
+        .btn-success {
+            background-color: var(--olive-medium);
+            border-color: var(--olive-dark);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: var(--olive-dark);
+            border-color: var(--olive-dark);
+            color: white;
+        }
+        
+        .btn-outline-success {
             color: var(--olive-medium);
             border-color: var(--olive-medium);
         }
         
-        .btn-outline-primary:hover {
+        .btn-outline-success:hover {
             background-color: var(--olive-medium);
             border-color: var(--olive-medium);
             color: white;
         }
         
+        .btn-warning {
+            background-color: var(--cocoa-medium);
+            border-color: var(--cocoa-dark);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background-color: var(--cocoa-dark);
+            border-color: var(--cocoa-dark);
+            color: white;
+        }
+        
+        .btn-outline-warning {
+            color: var(--cocoa-medium);
+            border-color: var(--cocoa-medium);
+        }
+        
+        .btn-outline-warning:hover {
+            background-color: var(--cocoa-medium);
+            border-color: var(--cocoa-medium);
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #8B0000;
+            border-color: #6B0000;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #6B0000;
+            border-color: #4B0000;
+            color: white;
+        }
+        
+        .btn-outline-danger {
+            color: #8B0000;
+            border-color: #8B0000;
+        }
+        
+        .btn-outline-danger:hover {
+            background-color: #8B0000;
+            border-color: #8B0000;
+            color: white;
+        }
+        
+        .btn-info {
+            background-color: var(--olive-light);
+            border-color: var(--olive-medium);
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background-color: var(--olive-medium);
+            border-color: var(--olive-dark);
+            color: white;
+        }
+        
         .card {
-            background: var(--beige-medium);
-            border: 1px solid var(--olive-light);
+            background: var(--bg-medium);
+            border: 1px solid var(--cocoa-light);
+        }
+        
+        .card-header {
+            background-color: var(--cocoa-dark);
+            color: white;
+            border-bottom: 1px solid var(--cocoa-darker);
         }
         
         .alert {
-            border: 1px solid var(--olive-light);
+            border: 1px solid var(--cocoa-light);
         }
         
         .alert-success {
@@ -130,11 +236,56 @@
         .alert-danger {
             background-color: rgba(139, 0, 0, 0.1);
             color: #8B0000;
+            border-color: #8B0000;
+        }
+        
+        .alert-info {
+            background-color: rgba(107, 142, 35, 0.1);
+            color: var(--olive-dark);
+            border-color: var(--olive-light);
+        }
+        
+        .alert-warning {
+            background-color: rgba(184, 134, 91, 0.1);
+            color: var(--cocoa-dark);
+            border-color: var(--cocoa-medium);
+        }
+        
+        .text-primary {
+            color: var(--cocoa-dark) !important;
+        }
+        
+        .text-success {
+            color: var(--olive-medium) !important;
+        }
+        
+        .text-warning {
+            color: var(--cocoa-medium) !important;
+        }
+        
+        .text-info {
+            color: var(--olive-light) !important;
+        }
+        
+        .bg-primary {
+            background-color: var(--cocoa-dark) !important;
+        }
+        
+        .bg-success {
+            background-color: var(--olive-medium) !important;
+        }
+        
+        .bg-warning {
+            background-color: var(--cocoa-medium) !important;
+        }
+        
+        .bg-info {
+            background-color: var(--olive-light) !important;
         }
         
         .footer {
-            background: linear-gradient(135deg, var(--beige-dark) 0%, var(--beige-darker) 100%);
-            color: var(--olive-dark);
+            background: linear-gradient(135deg, var(--cocoa-dark) 0%, var(--cocoa-darker) 100%);
+            color: white;
             padding: 2rem 0;
             margin-top: 3rem;
             border-top: 2px solid var(--olive-light);
@@ -142,6 +293,19 @@
         
         .main-content {
             min-height: calc(100vh - 200px);
+        }
+        
+        .table {
+            background-color: white;
+        }
+        
+        .table thead {
+            background-color: var(--cocoa-dark);
+            color: white;
+        }
+        
+        .table tbody tr:hover {
+            background-color: rgba(184, 134, 91, 0.1);
         }
     </style>
     

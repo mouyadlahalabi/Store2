@@ -4,7 +4,9 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 from django.utils import timezone
 from django.db import models
-from .models import Product, Category, Store, Sale, Cart, CartItem, FavoriteStore
+from django.db.models import Sum, Count, F
+from django.db.models.functions import TruncMonth
+from .models import Product, Category, Store, Sale, Cart, CartItem, FavoriteStore, ProductSizeStock
 from .forms import CategoryForm, ProductForm, StoreCreationForm
 from .models import FavoriteStore
 
@@ -378,21 +380,127 @@ def category_detail(request, store_id, category_id):
         }
     })
 @login_required
+def purchase_product(request, store_id, product_id):
+    """صفحة تحديد الكمية والمقاس قبل إضافة المنتج إلى السلة"""
+    product = get_object_or_404(Product, id=product_id, store_id=store_id, store__approval_status='approved')
+    store = product.store
+    
+    # جلب الكميات حسب المقاس
+    size_stocks = {}
+    for size_stock in product.size_stocks.all():
+        size_stocks[size_stock.size] = size_stock.stock
+    
+    # التحقق من توفر المنتج
+    total_stock = product.get_total_stock()
+    if total_stock <= 0:
+        messages.error(request, 'عذراً، هذا المنتج غير متوفر حالياً.')
+        return redirect('stores:category_detail', store_id=store_id, category_id=product.category.id)
+    
+    if request.method == 'POST':
+        # جلب البيانات من النموذج
+        size_quantities = {}  # {size: quantity}
+        
+        # جمع الكميات من جميع المقاسات
+        for size in size_stocks.keys():
+            qty = request.POST.get(f'quantity_{size}', '0')
+            try:
+                qty = int(qty)
+                if qty > 0:
+                    size_quantities[size] = qty
+            except ValueError:
+                pass
+        
+        # التحقق من وجود كميات محددة
+        if not size_quantities:
+            messages.error(request, 'يرجى تحديد الكمية المطلوبة على الأقل لمقاس واحد.')
+            return render(request, 'stores/purchase_product.html', {
+                'product': product,
+                'store': store,
+                'size_stocks': size_stocks,
+            })
+        
+        # التحقق من الكميات المتاحة لكل مقاس
+        errors = []
+        for size, requested_qty in size_quantities.items():
+            available_qty = size_stocks.get(size, 0)
+            
+            # التحقق من الكمية في السلة الحالية
+            cart, _ = Cart.objects.get_or_create(user=request.user, is_active=True)
+            existing_item = CartItem.objects.filter(cart=cart, product=product, size=size).first()
+            if existing_item:
+                available_qty -= existing_item.quantity
+            
+            if requested_qty > available_qty:
+                errors.append(f'المقاس {size}: الكمية المتاحة هي {available_qty} قطعة فقط.')
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'stores/purchase_product.html', {
+                'product': product,
+                'store': store,
+                'size_stocks': size_stocks,
+            })
+        
+        # إضافة المنتجات إلى السلة
+        cart, _ = Cart.objects.get_or_create(user=request.user, is_active=True)
+        added_items = []
+        
+        for size, quantity in size_quantities.items():
+            cart_item, item_created = CartItem.objects.get_or_create(
+                cart=cart,
+                product=product,
+                size=size,
+                defaults={'quantity': quantity}
+            )
+            
+            if not item_created:
+                # إذا كان المنتج موجود في السلة بنفس المقاس، أضف الكمية
+                cart_item.quantity += quantity
+                cart_item.save()
+            else:
+                cart_item.quantity = quantity
+                cart_item.save()
+            
+            added_items.append(f"{quantity} قطعة من {size}")
+        
+        messages.success(request, f'تم إضافة {", ".join(added_items)} من {product.name} إلى السلة بنجاح.')
+        return redirect('stores:cart_detail')
+    
+    return render(request, 'stores/purchase_product.html', {
+        'product': product,
+        'store': store,
+        'size_stocks': size_stocks,
+    })
+
+
+@login_required
 def add_to_cart(request, store_id, product_id):
+    """إضافة منتج إلى السلة مع التحقق من الكمية المتاحة"""
     product = get_object_or_404(Product, id=product_id, store_id=store_id)
+
+    # التحقق من توفر المنتج
+    if product.stock <= 0:
+        messages.error(request, 'عذراً، هذا المنتج غير متوفر حالياً.')
+        return redirect('stores:category_detail', store_id=store_id, category_id=product.category.id)
 
     # احصل على السلة الخاصة بالمستخدم أو أنشئ واحدة
     cart, created = Cart.objects.get_or_create(user=request.user, is_active=True)
 
     # تحقق إذا المنتج موجود بالفعل في السلة
-    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
-    if not created:
-        cart_item.quantity += 1
-        cart_item.save()
+    cart_item, item_created = CartItem.objects.get_or_create(cart=cart, product=product)
+    
+    if not item_created:
+        # إذا كان المنتج موجود، تحقق من الكمية المتاحة
+        new_quantity = cart_item.quantity + 1
+        if new_quantity > product.stock:
+            messages.error(request, f'الكمية المتاحة هي {product.stock} قطعة فقط. لديك بالفعل {cart_item.quantity} قطعة في السلة.')
+            return redirect('stores:purchase_product', store_id=store_id, product_id=product_id)
+        cart_item.quantity = new_quantity
     else:
         cart_item.quantity = 1
-        cart_item.save()
-
+    
+    cart_item.save()
     messages.success(request, f'تم إضافة {product.name} إلى السلة بنجاح.')
     return redirect('stores:cart_detail')
 
@@ -495,15 +603,62 @@ def product_delete(request, store_id, product_id):
 
 @login_required
 def store_sales(request):
+    """سجل كامل لجميع المبيعات للمتجر - للقراءة فقط"""
     # تأكد أن المستخدم صاحب متجر
     store = get_object_or_404(Store, owner=request.user)
 
     # جميع المبيعات الخاصة بالمتجر (فقط للمنتجات الموجودة)
-    sales = Sale.objects.filter(store=store, product__isnull=False).select_related('product', 'buyer').order_by('-created_at')
+    sales_query = Sale.objects.filter(store=store, product__isnull=False).select_related('product', 'buyer')
+    
+    # فلترة حسب التاريخ إذا تم تحديده
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    if date_from:
+        sales_query = sales_query.filter(created_at__gte=date_from)
+    if date_to:
+        sales_query = sales_query.filter(created_at__lte=date_to)
+    
+    # ترتيب حسب التاريخ (الأحدث أولاً)
+    sales = sales_query.order_by('-created_at')
+    
+    # حساب الإحصائيات الإجمالية
+    total_sales_count = sales.count()
+    total_revenue = sum(sale.total_price() for sale in sales)
+    average_sale = total_revenue / total_sales_count if total_sales_count > 0 else 0
+    
+    # إحصائيات حسب المنتج
+    product_stats = sales.values('product__name', 'product__id').annotate(
+        total_quantity=Sum('quantity'),
+        total_revenue=Sum(F('quantity') * F('price')),
+        sale_count=Count('id')
+    ).order_by('-total_revenue')[:10]  # أفضل 10 منتجات
+    
+    # إحصائيات حسب الشهر
+    monthly_stats = sales.annotate(
+        month=TruncMonth('created_at')
+    ).values('month').annotate(
+        total_revenue=Sum(F('quantity') * F('price')),
+        total_count=Count('id')
+    ).order_by('-month')[:12]  # آخر 12 شهر
+    
+    # إحصائيات حسب المشتري
+    buyer_stats = sales.values('buyer__username', 'buyer__id').annotate(
+        total_purchases=Sum(F('quantity') * F('price')),
+        purchase_count=Count('id')
+    ).order_by('-total_purchases')[:10]  # أفضل 10 مشترين
 
     return render(request, 'stores/store_sales.html', {
         'store': store,
-        'sales': sales
+        'sales': sales,
+        'total_sales_count': total_sales_count,
+        'total_revenue': total_revenue,
+        'average_sale': average_sale,
+        'product_stats': product_stats,
+        'monthly_stats': monthly_stats,
+        'buyer_stats': buyer_stats,
+        'date_from': date_from,
+        'date_to': date_to,
     })
 
 
@@ -511,6 +666,99 @@ def store_sales(request):
 def cart_detail(request):
     cart, created = Cart.objects.get_or_create(user=request.user, is_active=True)
     return render(request, 'stores/cart_detail.html', {'cart': cart})
+
+
+@login_required
+def checkout(request):
+    """إتمام عملية الشراء وإنشاء سجلات المبيعات"""
+    cart = get_object_or_404(Cart, user=request.user, is_active=True)
+    cart_items = cart.items.all()
+    
+    if not cart_items.exists():
+        messages.error(request, 'السلة فارغة. لا يمكن إتمام الشراء.')
+        return redirect('stores:cart_detail')
+    
+    if request.method == 'POST':
+        errors = []
+        sales_created = []
+        
+        # التحقق من توفر جميع المنتجات قبل إنشاء المبيعات
+        for item in cart_items:
+            if item.size:
+                # التحقق من الكمية المتاحة للمقاس المحدد
+                try:
+                    size_stock = item.product.size_stocks.get(size=item.size)
+                    if item.quantity > size_stock.stock:
+                        errors.append(f'المنتج {item.product.name} - المقاس {item.size}: الكمية المتاحة هي {size_stock.stock} قطعة فقط.')
+                        continue
+                except ProductSizeStock.DoesNotExist:
+                    errors.append(f'المنتج {item.product.name} - المقاس {item.size}: غير متوفر.')
+                    continue
+            else:
+                # التحقق من الكمية الإجمالية
+                if item.quantity > item.product.stock:
+                    errors.append(f'المنتج {item.product.name}: الكمية المتاحة هي {item.product.stock} قطعة فقط.')
+                    continue
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return redirect('stores:cart_detail')
+        
+        # إنشاء سجلات المبيعات وتحديث المخزون
+        for item in cart_items:
+            # إنشاء سجل المبيعة
+            sale = Sale.objects.create(
+                store=item.product.store,
+                product=item.product,
+                buyer=request.user,
+                size=item.size if item.size else '',
+                quantity=item.quantity,
+                price=item.product.price
+            )
+            sales_created.append(sale)
+            
+            # تحديث المخزون
+            if item.size:
+                # تحديث كمية المقاس المحدد
+                try:
+                    size_stock = item.product.size_stocks.get(size=item.size)
+                    if size_stock.stock >= item.quantity:
+                        size_stock.stock -= item.quantity
+                        size_stock.save()
+                        # تحديث إجمالي الكمية في Product
+                        item.product.stock = item.product.get_total_stock()
+                        item.product.save()
+                    else:
+                        errors.append(f'خطأ في تحديث المخزون للمنتج {item.product.name} - المقاس {item.size}')
+                except ProductSizeStock.DoesNotExist:
+                    errors.append(f'المقاس {item.size} غير موجود للمنتج {item.product.name}')
+            else:
+                # تحديث الكمية الإجمالية
+                if item.product.stock >= item.quantity:
+                    item.product.stock -= item.quantity
+                    item.product.save()
+                else:
+                    errors.append(f'خطأ في تحديث المخزون للمنتج {item.product.name}')
+        
+        if errors:
+            # إذا حدث خطأ، احذف المبيعات التي تم إنشاؤها
+            for sale in sales_created:
+                sale.delete()
+            for error in errors:
+                messages.error(request, error)
+            return redirect('stores:cart_detail')
+        
+        # حذف عناصر السلة بعد إتمام الشراء
+        cart_items.delete()
+        cart.is_active = False
+        cart.save()
+        
+        messages.success(request, f'تم إتمام الشراء بنجاح! تم إنشاء {len(sales_created)} عملية بيع.')
+        return redirect('stores:cart_detail')
+    
+    # إذا لم يكن POST، إعادة توجيه إلى السلة
+    return redirect('stores:cart_detail')
 
 
 @login_required
@@ -523,13 +771,48 @@ def remove_from_cart(request, item_id):
 @login_required
 def update_cart_item(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id, cart__user=request.user)
+    product = cart_item.product
+    
     if request.method == "POST":
         quantity = int(request.POST.get('quantity', 1))
+        
         if quantity <= 0:
             cart_item.delete()
+            messages.success(request, 'تم حذف المنتج من السلة.')
         else:
-            cart_item.quantity = quantity
-            cart_item.save()
+            # التحقق من الكمية المتاحة حسب المقاس
+            if cart_item.size:
+                # إذا كان هناك مقاس محدد، تحقق من الكمية المتاحة لهذا المقاس
+                try:
+                    size_stock = product.size_stocks.get(size=cart_item.size)
+                    max_quantity = size_stock.stock
+                    
+                    # التحقق من الكمية في السلة الحالية (باستثناء العنصر الحالي)
+                    other_items = CartItem.objects.filter(
+                        cart=cart_item.cart,
+                        product=product,
+                        size=cart_item.size
+                    ).exclude(id=cart_item.id)
+                    reserved_quantity = sum(item.quantity for item in other_items)
+                    available_quantity = max_quantity - reserved_quantity
+                    
+                    if quantity > available_quantity:
+                        messages.error(request, f'عذراً، الكمية المتاحة للمقاس {cart_item.size} هي {available_quantity} قطعة فقط.')
+                    else:
+                        cart_item.quantity = quantity
+                        cart_item.save()
+                        messages.success(request, 'تم تحديث الكمية بنجاح.')
+                except ProductSizeStock.DoesNotExist:
+                    messages.error(request, 'المقاس المحدد غير موجود.')
+            else:
+                # إذا لم يكن هناك مقاس محدد، استخدم الكمية الإجمالية
+                if quantity > product.stock:
+                    messages.error(request, f'عذراً، الكمية المتاحة هي {product.stock} قطعة فقط.')
+                else:
+                    cart_item.quantity = quantity
+                    cart_item.save()
+                    messages.success(request, 'تم تحديث الكمية بنجاح.')
+    
     return redirect('stores:cart_detail')
 
 

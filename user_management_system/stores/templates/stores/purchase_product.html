@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}شراء {{ product.name }}{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+        --cocoa-light: #D4A574;
+        --cocoa-medium: #B8865B;
+        --cocoa-dark: #8B6F47;
+        --olive-medium: #6B8E23;
+    }
+    
+    .size-quantity-row {
+        background: #f8f9fa;
+        border: 1px solid var(--cocoa-light);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .size-label {
+        font-weight: 600;
+        color: var(--cocoa-dark);
+        font-size: 1.1rem;
+    }
+    
+    .stock-info {
+        color: var(--olive-medium);
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">شراء المنتج</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+                            {% else %}
+                                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                    <span class="text-muted">لا توجد صورة</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <h4>{{ product.name }}</h4>
+                            <p class="text-muted">{{ product.description|default:"لا يوجد وصف" }}</p>
+                            <hr>
+                            <div class="mb-2">
+                                <strong>السعر:</strong> <span class="text-success fs-5">{{ product.price }} ر.س</span>
+                            </div>
+                            <div class="mb-2">
+                                <strong>إجمالي المتوفر:</strong> 
+                                {% if product.get_total_stock > 0 %}
+                                    <span class="text-success">{{ product.get_total_stock }} قطعة</span>
+                                {% else %}
+                                    <span class="text-danger">غير متوفر</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if product.get_total_stock > 0 and size_stocks %}
+                    <form method="post" class="mt-4" id="purchase-form">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3" style="color: var(--cocoa-dark);">
+                            <i class="bi bi-rulers"></i> اختر المقاسات والكميات المطلوبة:
+                        </h5>
+                        
+                        {% for size, stock in size_stocks.items %}
+                        <div class="size-quantity-row">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <span class="size-label">{{ size }}</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <span class="stock-info">
+                                        <i class="bi bi-check-circle"></i> متوفر: {{ stock }} قطعة
+                                    </span>
+                                </div>
+                                <div class="col-md-5">
+                                    <div class="input-group">
+                                        <input 
+                                            type="number" 
+                                            name="quantity_{{ size }}" 
+                                            id="quantity_{{ size }}"
+                                            class="form-control quantity-input" 
+                                            value="0" 
+                                            min="0" 
+                                            max="{{ stock }}"
+                                            data-size="{{ size }}"
+                                            data-price="{{ product.price }}"
+                                        >
+                                        <span class="input-group-text">قطعة</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <div class="alert alert-info mt-4">
+                            <strong>المجموع:</strong> <span id="total-price">0.00 ر.س</span>
+                            <br>
+                            <small id="total-quantity">الكمية الإجمالية: 0 قطعة</small>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success btn-lg" id="submit-btn" disabled>
+                                <i class="bi bi-cart-check"></i> أضف إلى السلة
+                            </button>
+                            <a href="{% url 'stores:category_detail' store.id product.category.id %}" class="btn btn-secondary btn-lg">
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-danger">
+                        <strong>عذراً!</strong> هذا المنتج غير متوفر حالياً.
+                    </div>
+                    <a href="{% url 'stores:category_detail' store.id product.category.id %}" class="btn btn-secondary">
+                        العودة إلى القسم
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const price = {{ product.price }};
+    const quantityInputs = document.querySelectorAll('.quantity-input');
+    const totalPriceElement = document.getElementById('total-price');
+    const totalQuantityElement = document.getElementById('total-quantity');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    function updateTotal() {
+        let totalQuantity = 0;
+        let totalPrice = 0;
+        
+        quantityInputs.forEach(input => {
+            const qty = parseInt(input.value) || 0;
+            totalQuantity += qty;
+            totalPrice += qty * price;
+        });
+        
+        totalPriceElement.textContent = totalPrice.toFixed(2) + ' ر.س';
+        totalQuantityElement.textContent = 'الكمية الإجمالية: ' + totalQuantity + ' قطعة';
+        
+        // تفعيل/تعطيل زر الإرسال
+        submitBtn.disabled = totalQuantity === 0;
+    }
+    
+    quantityInputs.forEach(input => {
+        input.addEventListener('input', updateTotal);
+        input.addEventListener('change', function() {
+            const max = parseInt(this.max);
+            const value = parseInt(this.value) || 0;
+            if (value > max) {
+                this.value = max;
+                alert(`الكمية المتاحة للمقاس ${this.dataset.size} هي ${max} قطعة فقط.`);
+            }
+            updateTotal();
+        });
+    });
+    
+    // تحديث عند التحميل
+    updateTotal();
+</script>
+{% endblock %}
