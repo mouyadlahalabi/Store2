@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Store(models.Model):
     APPROVAL_STATUS_CHOICES = [
@@ -39,6 +40,14 @@ class Store(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def average_rating(self):
+        return self.ratings.aggregate(avg=models.Avg('rating'))['avg'] or 0
+
+    @property
+    def ratings_count(self):
+        return self.ratings.count()
+
 
 class Category(models.Model):
     store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="categories")
@@ -54,6 +63,10 @@ class Product(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    original_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="السعر الأصلي قبل الخصم - عند تعبئته يظهر المنتج في العروض"
+    )
     image = models.ImageField(upload_to="products/", blank=True, null=True)
     stock = models.PositiveIntegerField(default=0)  # إجمالي الكمية (يتم حسابه تلقائياً)
     sizes = models.CharField(max_length=200, blank=True, help_text="مثال: S,M,L,XL")
@@ -61,11 +74,30 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.store.name}"
+
+    @property
+    def average_rating(self):
+        return self.ratings.aggregate(avg=models.Avg('rating'))['avg'] or 0
+
+    @property
+    def ratings_count(self):
+        return self.ratings.count()
     
     def get_total_stock(self):
-        """حساب إجمالي الكمية من جميع المقاسات"""
-        return sum(size_stock.stock for size_stock in self.size_stocks.all())
+        """حساب إجمالي الكمية من جميع المقاسات أو الحقل stock"""
+        size_total = sum(size_stock.stock for size_stock in self.size_stocks.all())
+        return size_total if size_total > 0 else self.stock
     
+    def is_on_offer(self):
+        """هل المنتج ضمن العروض؟"""
+        return self.original_price is not None and self.original_price > self.price
+
+    def get_discount_percent(self):
+        """نسبة الخصم"""
+        if not self.is_on_offer():
+            return 0
+        return int(((float(self.original_price) - float(self.price)) / float(self.original_price)) * 100)
+
     def get_size_stock(self, size):
         """الحصول على كمية مقاس معين"""
         try:
@@ -161,3 +193,81 @@ class FavoriteStore(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.store.name}"
+
+
+class FavoriteProduct(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='favorite_products'
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='favorited_by'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        verbose_name = 'منتج مفضل'
+        verbose_name_plural = 'المنتجات المفضلة'
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
+
+
+class StoreRating(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='store_ratings'
+    )
+    store = models.ForeignKey(
+        Store,
+        on_delete=models.CASCADE,
+        related_name='ratings'
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'store')
+        ordering = ['-updated_at']
+        verbose_name = 'تقييم متجر'
+        verbose_name_plural = 'تقييمات المتاجر'
+
+    def __str__(self):
+        return f"{self.store.name} - {self.rating}/5"
+
+
+class ProductRating(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='product_ratings'
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='ratings'
+    )
+    rating = models.PositiveSmallIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    comment = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+        ordering = ['-updated_at']
+        verbose_name = 'تقييم منتج'
+        verbose_name_plural = 'تقييمات المنتجات'
+
+    def __str__(self):
+        return f"{self.product.name} - {self.rating}/5"

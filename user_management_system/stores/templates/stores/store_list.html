@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}المتاجر - Store{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container-fluid">
+        <h2 class="section-title">جميع المتاجر</h2>
+        <div class="row g-4">
+            {% for store in stores %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'stores:store_front' store.id %}" class="card text-decoration-none text-dark h-100">
+                    <div style="height: 200px; overflow: hidden; background: var(--bg-light);">
+                        {% if store.logo %}
+                            <img src="{{ store.logo.url }}" alt="{{ store.name }}" class="card-img-top" style="height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100">
+                                <i class="bi bi-shop" style="font-size: 4rem; color: var(--accent);"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ store.name }}</h5>
+                        <p class="card-text text-muted">{{ store.description|truncatewords:20 }}</p>
+                        <span class="badge badge-primary"><i class="bi bi-bag"></i> تصفح المنتجات</span>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> لا توجد متاجر متاحة حالياً.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

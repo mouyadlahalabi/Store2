@@ -14,67 +14,150 @@ from .forms import (
     PasswordChangeForm
 )
 from .models import User 
-from stores.models import Store, Product, FavoriteStore
+from stores.models import (
+    Store,
+    Product,
+    Sale,
+    FavoriteProduct,
+    StoreRating,
+    ProductRating,
+)
 from random import sample
-@login_required(login_url='login') 
-def home(request):
-    """الصفحة الرئيسية - عرض المتاجر ومنتجات عشوائية من كل متجر"""
-    # جلب المتاجر المعتمدة والنشطة فقط
-    stores = Store.objects.filter(
-        is_active=True, 
-        approval_status='approved'
-    ).prefetch_related('products')
+from random import sample
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from django.db.models import F, Q, Sum
 
-    # فلتر حسب المتجر
+
+@login_required(login_url='login')
+def home(request):
+    """عرض الصفحة الرئيسية.
+
+    السلوك الجديد:
+    * المستخدم العادي يبقى على الواجهة الحالية (قائمة المنتجات والمتاجر).
+    * صاحب المتجر يُعاد توجيهه إلى واجهة متجره الخاص.
+    * المدير (admin) يُعاد توجيهه إلى لوحة الإدارة.
+    """
+    # إذا تم تسجيل الدخول، نفحص نوع المستخدم ونوجهه للصفحة المناسبة
+    if request.user.is_authenticated:
+        if request.user.is_admin():
+            return redirect('admin_dashboard')
+        elif request.user.is_store_owner():
+            # واجهة صاحب المتجر هي صفحة متجره الأمامية
+            return redirect('stores:my_store_front')
+
+    stores = Store.objects.filter(is_active=True, approval_status='approved').prefetch_related('products')
+
+    # فلتر المتجر
     store_filter = request.GET.get('store')
     if store_filter:
         stores = stores.filter(id=store_filter)
 
-    store_products = []
-    # جلب جميع المتاجر المفضلة للمستخدم
-    favorite_store_ids = set()
-    if request.user.is_authenticated:
-        favorite_store_ids = set(
-            FavoriteStore.objects.filter(user=request.user).values_list('store_id', flat=True)
-        )
-    
-    for store in stores:
-        # جلب المنتجات الموجودة فقط (تجنب المنتجات المحذوفة)
-        products = list(Product.objects.filter(store=store))
-        if products:
-            # جلب 4-6 منتجات عشوائية من كل متجر
-            num_products = min(len(products), 6)
-            if num_products > 0:
-                random_products = sample(products, num_products)
-                store_products.append({
-                    'store': store,
-                    'products': random_products,
-                    'is_favorite': store.id in favorite_store_ids
-                })
+    # فلتر البحث
+    query = request.GET.get('q', '').strip()
 
-    # جلب جميع المتاجر للفلتر
-    all_stores = Store.objects.filter(
-        is_active=True, 
-        approval_status='approved'
-    ).order_by('name')
-    
-    # جلب المتاجر المفضلة للمستخدم
-    favorite_store_ids = set()
+    # ترتيب المنتجات
+    order = request.GET.get('order')
+
+    favorite_product_ids = set()
     if request.user.is_authenticated and not request.user.is_store_owner():
-        
-        favorite_store_ids = set(
-            FavoriteStore.objects.filter(user=request.user)
-            .values_list('store_id', flat=True)
+        favorite_product_ids = set(
+            FavoriteProduct.objects.filter(user=request.user).values_list('product_id', flat=True)
         )
+
+    store_products = []
+
+    for store in stores:
+        products_qs = store.products.all()
+
+        # فلتر البحث
+        if query:
+            products_qs = products_qs.filter(
+                name__icontains=query
+            ) | products_qs.filter(
+                description__icontains=query
+            )
+
+        # ترتيب المنتجات
+        if order == 'newest':
+            products_qs = products_qs.order_by('-created_at')
+        elif order == 'price-low':
+            products_qs = products_qs.order_by('price')
+        elif order == 'price-high':
+            products_qs = products_qs.order_by('-price')
+        elif order == 'popular':
+            products_qs = products_qs.order_by('-sales_count')
+
+        products_list = list(products_qs)
+        if products_list:
+            if not query:
+                products_list = sample(products_list, min(len(products_list), 6))
+            else:
+                products_list = products_list[:6]
+
+            if favorite_product_ids:
+                for product in products_list:
+                    product.is_favorite = product.id in favorite_product_ids
+
+            store_products.append({
+                'store': store,
+                'products': products_list,
+                'is_favorite': False
+            })
+
+    # -----------------------
+    # إضافة منتجات العروض فقط
+    # -----------------------
+    discounted_store_products = []
+    for store in stores:
+        discounted_qs = store.products.filter(original_price__gt=F('price'))
+        
+        # يمكن فلتر البحث والعرض حسب الحاجة
+        if query:
+            discounted_qs = discounted_qs.filter(
+                Q(name__icontains=query) | Q(description__icontains=query)
+            )
+        
+        # ترتيب المنتجات المخفضة
+        if order == 'newest':
+            discounted_qs = discounted_qs.order_by('-created_at')
+        elif order == 'price-low':
+            discounted_qs = discounted_qs.order_by('price')
+        elif order == 'price-high':
+            discounted_qs = discounted_qs.order_by('-price')
+        elif order == 'popular':
+            discounted_qs = discounted_qs.order_by('-sales_count')
+
+        discounted_list = list(discounted_qs)
+        if discounted_list:
+            discounted_list = discounted_list[:6]  # عرض 6 منتجات كحد أقصى لكل متجر
+            if favorite_product_ids:
+                for product in discounted_list:
+                    product.is_favorite = product.id in favorite_product_ids
+            discounted_store_products.append({
+                'store': store,
+                'products': discounted_list,
+                'is_favorite': False
+            })
+
+    all_stores = Store.objects.filter(is_active=True, approval_status='approved').order_by('name')
 
     context = {
         'store_products': store_products,
+        'discounted_store_products': discounted_store_products,  # <--- هذه للعروض
         'all_stores': all_stores,
         'selected_store': int(store_filter) if store_filter else None,
-        'favorite_store_ids': favorite_store_ids,
+        'search_query': query,
+        'order': order,
+        'favorite_product_ids': favorite_product_ids,
     }
     return render(request, 'users/home.html', context)
 
+
+
+def about_page(request):
+    """صفحة حول المتجر"""
+    return render(request, 'users/about.html')
 
 
 def register(request):
@@ -172,16 +255,25 @@ def admin_dashboard(request):
     if not request.user.is_admin():
         return HttpResponseForbidden('غير مسموح لك بالوصول إلى هذه الصفحة.')
 
+    revenue_data = Sale.objects.aggregate(total=Sum(F('quantity') * F('price')))
+
     context = {
         'total_users': User.objects.count(),
         'total_admins': User.objects.filter(user_type='admin').count(),
         'total_regular_users': User.objects.filter(user_type='user').count(),
         'total_store_owners': User.objects.filter(user_type='store_owner').count(),
         'total_stores': Store.objects.count(),
+        'total_products': Product.objects.count(),
+        'total_sales': Sale.objects.count(),
+        'total_revenue': revenue_data['total'] or 0,
+        'total_product_favorites': FavoriteProduct.objects.count(),
+        'total_store_ratings': StoreRating.objects.count(),
+        'total_product_ratings': ProductRating.objects.count(),
         'verified_stores': Store.objects.filter(is_verified=True).count(),
         'pending_stores_count': Store.objects.filter(approval_status='pending').count(),
         'recent_users': User.objects.order_by('-date_joined')[:5],
         'recent_stores': Store.objects.order_by('-created_at')[:5],
+        'recent_sales': Sale.objects.select_related('buyer', 'product', 'store').order_by('-created_at')[:5],
     }
 
     return render(request, 'users/admin_dashboard.html', context)
@@ -222,4 +314,3 @@ def create_admin(request):
         form.fields['user_type'].initial = 'admin'
 
     return render(request, 'users/create_admin.html', {'form': form})
-

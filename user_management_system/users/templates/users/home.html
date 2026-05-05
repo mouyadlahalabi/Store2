@@ -1,434 +1,713 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}الرئيسية - نظام إدارة المستخدمين{% endblock %}
+{% block title %}الرئيسية - متجر الموضة{% endblock %}
 
-{% block content %}
+{% block extra_css %}
 <style>
-    :root {
-        /* ألوان الكاكاو (الأساسي) */
-        --cocoa-light: #D4A574;
-        --cocoa-medium: #B8865B;
-        --cocoa-dark: #8B6F47;
-        --cocoa-darker: #6B5233;
-        
-        /* ألوان الزيتي (الثانوي) */
-        --olive-dark: #556B2F;
-        --olive-medium: #6B8E23;
-        --olive-light: #7A8B5A;
-        --olive-lighter: #8F9779;
-        --olive-accent: #9CAF88;
-        
-        /* خلفية فاتحة */
-        --bg-light: #F5E6D3;
-        --bg-medium: #E8D5C4;
-    }
-    
-    .store-products-section {
-        background: linear-gradient(135deg, var(--cocoa-dark) 0%, var(--cocoa-medium) 50%, var(--cocoa-light) 100%);
-        padding: 3rem 0;
-        margin-bottom: 3rem;
-        border-radius: 0 0 30px 30px;
-        box-shadow: 0 5px 20px rgba(139, 111, 71, 0.2);
-    }
-    .products-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-    }
-    .product-card {
-        background: var(--bg-medium);
-        border-radius: 15px;
+    /* ==================== HERO SECTION ==================== */
+    .hero-section {
+        background: linear-gradient(135deg, #000000 0%, #000000 100%);
+        color: white;
+        padding: 4rem 0;
+        position: relative;
         overflow: hidden;
-        transition: all 0.3s ease;
-        cursor: pointer;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, transparent 70%);
+        border-radius: 50%;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 2rem;
+        font-weight: 300;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .hero-image {
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-image img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ==================== CATEGORIES SECTION ==================== */
+    .categories-section {
+        padding: 3rem 0;
+        background-color: #f8f8f8;
+    }
+
+    .category-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
         text-decoration: none;
         color: inherit;
-        display: block;
-        box-shadow: 0 5px 15px rgba(139, 111, 71, 0.15);
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         height: 100%;
         display: flex;
         flex-direction: column;
-        border: 1px solid var(--cocoa-light);
     }
-    .product-card:hover {
-        transform: translateY(-8px);
-        box-shadow: 0 10px 25px rgba(139, 111, 71, 0.25);
-        text-decoration: none;
-        color: inherit;
-        border-color: var(--cocoa-dark);
+
+    .category-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        transform: translateY(-5px);
     }
-    .store-name-header {
-        background: linear-gradient(135deg, var(--cocoa-dark) 0%, var(--cocoa-medium) 100%);
-        color: white;
-        padding: 0.75rem 1rem;
-        font-weight: 600;
-        font-size: 0.95rem;
+
+    .category-image {
+        width: 100%;
+        height: 250px;
+        background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .favorite-btn-small {
-        color: rgba(255, 255, 255, 0.8);
-        text-decoration: none;
-        transition: all 0.3s ease;
-        padding: 0.2rem 0.5rem;
-        border-radius: 5px;
-        font-size: 1.2rem;
-    }
-    
-    .favorite-btn-small:hover {
-        color: #ff6b6b;
-        background: rgba(255, 255, 255, 0.2);
-        text-decoration: none;
-    }
-    
-    .favorite-btn-small.active {
-        color: #ff6b6b;
-    }
-    .store-name-header i {
-        font-size: 1.1rem;
-    }
-    .product-image-container {
-        width: 100%;
-        height: 200px;
+        justify-content: center;
+        font-size: 4rem;
         overflow: hidden;
-        background: var(--bg-light);
         position: relative;
     }
+
+    .category-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .category-card:hover .category-image img {
+        transform: scale(1.1);
+    }
+
+    .category-info {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .category-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+
+    .category-count {
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 1rem;
+    }
+
+    .category-link {
+        color: #E31837;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: gap 0.3s ease;
+    }
+
+    .category-link:hover {
+        gap: 1rem;
+    }
+
+    /* ==================== PRODUCTS SECTION ==================== */
+    .products-section {
+        padding: 4rem 0;
+    }
+
+    .products-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .products-filters {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .products-filters select {
+        min-width: 150px;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    /* ==================== PRODUCT CARD ==================== */
+    .product-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .product-card:hover {
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+        transform: translateY(-8px);
+    }
+
+    .product-image-wrapper {
+        position: relative;
+        width: 100%;
+        height: 280px;
+        background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);
+        overflow: hidden;
+    }
+
     .product-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform 0.3s ease;
     }
+
     .product-card:hover .product-image {
+        transform: scale(1.08);
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background-color: #E31837;
+        color: #1a1a1a;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        z-index: 2;
+    }
+
+    .product-badge.new {
+        background-color: #27ae60;
+        color: white;
+    }
+
+    .product-badge.sale {
+        background-color: #e74c3c;
+        color: white;
+    }
+
+    .product-wishlist {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        width: 40px;
+        height: 40px;
+        background-color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        z-index: 2;
+        color: #1a1a1a;
+        font-size: 1.2rem;
+    }
+
+    .product-wishlist:hover {
+        background-color: #E31837;
         transform: scale(1.1);
     }
+
+    .product-wishlist.active {
+        background-color: #e74c3c;
+        color: white;
+    }
+
     .product-info {
-        padding: 1rem;
+        padding: 1.5rem;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
     }
+
+    .product-store {
+        font-size: 0.8rem;
+        color: #E31837;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
     .product-name {
         font-size: 1rem;
         font-weight: 600;
-        margin: 0 0 0.5rem 0;
-        color: var(--cocoa-dark);
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
         line-height: 1.4;
         min-height: 2.8rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
     }
+
     .product-description {
         font-size: 0.85rem;
-        color: #5a5a5a;
-        margin: 0 0 0.75rem 0;
-        line-height: 1.5;
+        color: #666;
+        margin-bottom: 1rem;
         flex-grow: 1;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
-    .product-details {
+
+    .product-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .stars {
+        color: #f39c12;
+    }
+
+    .rating-count {
+        color: #999;
+        font-size: 0.8rem;
+    }
+
+    .product-footer {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: auto;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--cocoa-light);
+        padding-top: 1rem;
+        border-top: 1px solid #e0e0e0;
     }
+
     .product-price {
-        font-size: 1.1rem;
-        color: var(--cocoa-dark);
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .price-current {
+        font-size: 1.25rem;
         font-weight: 700;
-        margin: 0;
+        color: #1a1a1a;
     }
+
+    .price-original {
+        font-size: 0.9rem;
+        color: #999;
+        text-decoration: line-through;
+    }
+
     .product-stock {
-        font-size: 0.8rem;
-        color: var(--olive-medium);
-        font-weight: 500;
+        font-size: 0.85rem;
+        font-weight: 600;
     }
-    .section-title {
+
+    .product-stock.in-stock {
+        color: #27ae60;
+    }
+
+    .product-stock.out-of-stock {
+        color: #e74c3c;
+    }
+
+    .product-action {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #1a1a1a;
         color: white;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .product-action:hover {
+        background-color: #E31837;
+        color: #1a1a1a;
+        transform: scale(1.1);
+    }
+
+    /* ==================== NO PRODUCTS ==================== */
+    .no-products {
         text-align: center;
-        margin-bottom: 2rem;
+        padding: 3rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .no-products-icon {
+        font-size: 4rem;
+        color: #E31837;
+        margin-bottom: 1rem;
+    }
+
+    .no-products-text {
+        color: #666;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    /* ==================== PROMOTIONAL BANNERS ==================== */
+    .promo-banner {
+        background: linear-gradient(135deg, #000000 100%, #000000 100%);
+        color: #fffcfc;
+        padding: 3rem;
+        border-radius: 10px;
+        margin: 3rem 0;
+        text-align: center;
+    }
+
+    .promo-banner h3 {
         font-size: 2rem;
         font-weight: 700;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        margin-bottom: 1rem;
     }
-    .no-image-placeholder {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-medium) 100%);
+
+    .promo-banner p {
+        font-size: 1.1rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.9;
     }
-    .no-image-placeholder i {
-        font-size: 4rem;
-        color: var(--cocoa-light);
-    }
-    .product-image-container {
-        cursor: pointer;
-    }
-    .product-image-container:has(.no-image-placeholder) {
-        cursor: default;
-    }
-    /* Modal للصورة */
-    .image-modal {
-        display: none;
-        position: fixed;
-        z-index: 9999;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.9);
-        animation: fadeIn 0.3s;
-    }
-    .image-modal.active {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .modal-content {
-        max-width: 90%;
-        max-height: 90%;
-        margin: auto;
-        animation: zoomIn 0.3s;
-    }
-    .modal-content img {
-        width: 100%;
-        height: auto;
-        max-height: 90vh;
-        object-fit: contain;
-        border-radius: 10px;
-    }
-    .close-modal {
-        position: absolute;
-        top: 20px;
-        right: 35px;
-        color: #f1f1f1;
-        font-size: 40px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: color 0.3s;
-    }
-    .close-modal:hover {
-        color: #fff;
-    }
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    @keyframes zoomIn {
-        from { transform: scale(0.7); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+
+        .products-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .product-image-wrapper {
+            height: 200px;
+        }
+
+        .products-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .products-filters {
+            width: 100%;
+        }
+
+        .products-filters select {
+            width: 100%;
+        }
     }
 </style>
+{% endblock %}
 
-<!-- قسم المنتجات العشوائية من كل متجر -->
-{% if store_products %}
-<div class="store-products-section">
-    <div class="container">
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <h2 class="section-title mb-0">
-                    <i class="bi bi-star-fill"></i> 
-                </h2>
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title">اكتشف أحدث صيحات الموضة</h1>
+                <p class="hero-subtitle">تسوق أفضل العلامات التجارية بأسعار حصرية وخدمة عملاء متميزة</p>
+                <div class="hero-buttons">
+                    <a href="#products" class="btn btn-accent">
+                        <i class="bi bi-bag-check"></i> تسوق الآن
+                    </a>
+                    <a href="#" class="btn btn-outline-primary" style="color: white; border-color: white;">
+                        <i class="bi bi-info-circle"></i> اعرف أكثر
+                    </a>
+                </div>
             </div>
-            <div class="col-md-4">
-                <form method="GET" class="d-flex">
-                    <select name="store" class="form-select" onchange="this.form.submit()" style="background: white; border: 2px solid rgba(255,255,255,0.3); color: var(--cocoa-dark);">
-                        <option value="">جميع المتاجر</option>
-                        {% for store in all_stores %}
-                        <option value="{{ store.id }}" {% if selected_store == store.id %}selected{% endif %}>
-                            {{ store.name }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </form>
-            </div>
-        </div>
-        
-        <div class="products-grid">
-            {% for item in store_products %}
-                {% with store=item.store products=item.products %}
-                    {% for product in products %}
-                        <div class="product-card">
-                            <!-- اسم المتجر في الأعلى -->
-                            <div class="store-name-header">
-                                <div class="d-flex justify-content-between align-items-center w-100">
-                                    <div>
-                                        <i class="bi bi-shop"></i>
-                                        {{ store.name }}
-                                    </div>
-                                    {% if user.is_authenticated and not user.is_store_owner %}
-                                        <a href="{% url 'stores:toggle_favorite_store' store.id %}" 
-                                           class="favorite-btn-small {% if store.id in favorite_store_ids %}active{% endif %}" 
-                                           title="{% if store.id in favorite_store_ids %}إزالة من المفضلة{% else %}إضافة إلى المفضلة{% endif %}"
-                                           onclick="event.preventDefault(); toggleFavorite(this, {{ store.id }});">
-                                            <i class="bi {% if store.id in favorite_store_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            
-                            <!-- صورة المنتج -->
-                            <div class="product-image-container" {% if product.image %}onclick="openImageModal('{{ product.image.url }}', '{{ product.name }}')"{% endif %}>
-                                {% if product.image %}
-                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
-                                {% else %}
-                                    <div class="no-image-placeholder" style="cursor: default;">
-                                        <i class="bi bi-image"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- تفاصيل المنتج -->
-                            <div class="product-info">
-                                <h5 class="product-name">{{ product.name }}</h5>
-                                {% if product.description %}
-                                    <p class="product-description">{{ product.description|truncatewords:15 }}</p>
-                                {% endif %}
-                                
-                                <div class="product-details">
-                                    <span class="product-price">{{ product.price }} ر.س</span>
-                                    {% if product.stock > 0 %}
-                                        <span class="product-stock">
-                                            <i class="bi bi-check-circle"></i> متوفر ({{ product.stock }})
-                                        </span>
-                                    {% else %}
-                                        <span class="product-stock" style="color: #8B4513;">
-                                            <i class="bi bi-x-circle"></i> غير متوفر
-                                        </span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endwith %}
-            {% endfor %}
-        </div>
-        
-        <!-- Modal لعرض الصورة -->
-        <div id="imageModal" class="image-modal" onclick="closeImageModal()">
-            <span class="close-modal" onclick="closeImageModal()">&times;</span>
-            <div class="modal-content" onclick="event.stopPropagation()">
-                <img id="modalImage" src="" alt="">
-            </div>
+       <div class="col-lg-6 hero-image">
+    <img src="https://www.brabant.nl/publish/pages/13341/940px/free_fashion.jpg" 
+         alt="Fashion Collection" 
+         style="max-height: 400px; width: auto;">
+</div>
+
+
         </div>
     </div>
-</div>
-{% endif %}
+</section>
 
-<!-- قسم قائمة المتاجر (اختياري - يمكن إزالته إذا لم تكن هناك حاجة) -->
-<div class="container mt-5">
-    <h2 class="text-center mb-5" style="color: var(--cocoa-dark);"><i class="bi bi-shop"></i> جميع المتاجر المتاحة</h2>
-    
-    {% if store_products %}
+<!-- Categories Section -->
+{% if all_stores %}
+<section class="categories-section">
+    <div class="container-fluid">
+        <h2 class="section-title">المتاجر المتاحة</h2>
         <div class="row">
-            {% for item in store_products %}
-                {% with store=item.store %}
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        {% if store.logo %}
-                            <img src="{{ store.logo.url }}" class="card-img-top" alt="{{ store.name }}" style="height: 200px; object-fit: cover;">
-                        {% else %}
-                            <img src="https://via.placeholder.com/400x200?text=Store+Logo" class="card-img-top" alt="No logo">
-                        {% endif %}
-
-                        <div class="card-body text-center">
-                            <h5 class="card-title">{{ store.name }}</h5>
-                            <p class="text-muted">{{ store.description|truncatechars:80 }}</p>
-                            <p><strong>المالك:</strong> {{ store.owner.username }}</p>
-                        </div>
-
-                        <div class="card-footer text-center" style="background: var(--bg-light);">
-                            <a href="{% url 'stores:store_front' store.id %}" class="btn btn-outline-primary btn-sm me-2">
-                                <i class="bi bi-grid-3x3-gap"></i> عرض الأقسام
-                            </a>
-
-                            {% if user.is_authenticated %}
-                                {% if user == store.owner or user.is_superuser %}
-                                    <form method="post" action="{% url 'stores:store_delete' store.id %}" style="display:inline;">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-outline-danger btn-sm"
-                                            onclick="return confirm('هل أنت متأكد من حذف هذا المتجر؟');">
-                                            <i class="bi bi-trash"></i> حذف
-                                        </button>
-                                    </form>
-                                {% endif %}
+            {% for store in all_stores|slice:":6" %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <a href="{% url 'stores:store_front' store.id %}" class="category-card">
+                        <div class="category-image">
+                            {% if store.logo %}
+                                <img src="{{ store.logo.url }}" alt="{{ store.name }}">
+                            {% else %}
+                                <i class="bi bi-shop" style="color: #000000;"></i>
                             {% endif %}
                         </div>
-                    </div>
+                        <div class="category-info">
+                            <div>
+                                <h3 class="category-name">{{ store.name }}</h3>
+                                <p class="category-count">
+                                    <i class="bi bi-bag"></i> {{ store.products.count }} منتج
+                                </p>
+                            </div>
+                            <a href="{% url 'stores:store_front' store.id %}" class="category-link">
+                                تصفح المتجر
+                                <i class="bi bi-arrow-left"></i>
+                            </a>
+                        </div>
+                    </a>
                 </div>
-                {% endwith %}
             {% endfor %}
         </div>
-    {% else %}
-        <p class="text-center text-muted">لا توجد متاجر حالياً.</p>
-    {% endif %}
+        {% if all_stores|length > 6 %}
+            <div class="text-center mt-4">
+                <a href="#" class="btn btn-outline-primary">عرض جميع المتاجر</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Promotional Banner -->
+<div class="container-fluid">
+    <div class="promo-banner">
+        <h3>🎉 عرض خاص: خصم على المنتجات المختارة</h3>
+       
+        <a href="{% url 'stores:offers_list' %}" class="btn btn-primary">تسوق الآن</a>
+    </div>
 </div>
 
+<form id="filterForm" method="GET">
+    <div class="products-filters">
+        <select name="store" class="form-select" onchange="document.getElementById('filterForm').submit()">
+            <option value="">جميع المتاجر</option>
+            {% for store in all_stores %}
+                <option value="{{ store.id }}" {% if store.id == selected_store %}selected{% endif %}>{{ store.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="order" class="form-select" onchange="document.getElementById('filterForm').submit()">
+            <option value="">الترتيب</option>
+            <option value="newest" {% if order == 'newest' %}selected{% endif %}>الأحدث</option>
+            <option value="price-low" {% if order == 'price-low' %}selected{% endif %}>السعر: الأقل أولاً</option>
+            <option value="price-high" {% if order == 'price-high' %}selected{% endif %}>السعر: الأعلى أولاً</option>
+            <option value="popular" {% if order == 'popular' %}selected{% endif %}>الأكثر شهرة</option>
+        </select>
+
+        <input type="text" name="q" class="form-control" placeholder="ابحث عن المنتجات..." value="{{ search_query }}">
+        <button type="submit" class="btn btn-primary">بحث</button>
+    </div>
+</form>
+
+
+        {% if store_products %}
+            <div class="products-grid">
+                {% for item in store_products %}
+                    {% with store=item.store products=item.products %}
+                        {% for product in products %}
+                            <div class="product-card">
+                                <div class="product-image-wrapper">
+                                    {% if product.image %}
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+                                    {% else %}
+                                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f5f5f5 0%, #efefef 100%);">
+                                            <i class="bi bi-image" style="font-size: 3rem; color: #E31837;"></i>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if product.stock <= 5 and product.stock > 0 %}
+                                        <span class="product-badge sale">آخر قطع</span>
+                                    {% elif product.stock == 0 %}
+                                        <span class="product-badge sale">نفذ من المخزن</span>
+                                    {% else %}
+                                        <span class="product-badge new">جديد</span>
+                                    {% endif %}
+
+                                    {% comment %} {% if user.is_authenticated and not user.is_store_owner %}
+                                        <div class="product-wishlist {% if store.id in favorite_store_ids %}active{% endif %}" 
+                                             onclick="toggleFavorite(this, {{ store.id }})" 
+                                             title="{% if store.id in favorite_store_ids %}إزالة من المفضلة{% else %}إضافة إلى المفضلة{% endif %}">
+                                            <i class="bi {% if store.id in favorite_store_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+                                        </div>
+                                    {% endif %} {% endcomment %}
+                                </div>
+
+                                <div class="product-info">
+                                    <span class="product-store">{{ store.name }}</span>
+                                    <h3 class="product-name">{{ product.name }}</h3>
+                                    {% if product.description %}
+                                        <p class="product-description">{{ product.description|truncatewords:15 }}</p>
+                                    {% endif %}
+
+                                    <div class="product-rating">
+                                        <span class="stars">
+                                            <i class="bi bi-star-fill"></i>
+                                            <i class="bi bi-star-fill"></i>
+                                            <i class="bi bi-star-fill"></i>
+                                            <i class="bi bi-star-fill"></i>
+                                            <i class="bi bi-star-half"></i>
+                                        </span>
+                                        <span class="rating-count">(245)</span>
+                                    </div>
+
+                                    <div class="product-footer">
+                                        <div class="product-price">
+                                            <span class="price-current">{{ product.price }} ل.س</span>
+                                            {% comment %} <span class="price-original">{{ product.price|add:"50" }} ل.س</span> {% endcomment %}
+                                        </div>
+                                        {% if product.stock > 0 %}
+                                            <span class="product-stock in-stock">
+                                                <i class="bi bi-check-circle"></i> متوفر
+                                            </span>
+                                        {% else %}
+                                            <span class="product-stock out-of-stock">
+                                                <i class="bi bi-x-circle"></i> نفذ
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if product.stock > 0 %}
+                                    <div style="padding: 1rem;">
+                                        <a href="{% url 'stores:purchase_product' store.id product.id %}" class="btn btn-primary w-100">
+                                            <i class="bi bi-bag-plus"></i> أضف للسلة
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <div style="padding: 1rem;">
+                                        <button class="btn btn-secondary w-100" disabled>
+                                            <i class="bi bi-x-circle"></i> نفذ من المخزن
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-products">
+                <div class="no-products-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <p class="no-products-text">لا توجد منتجات متاحة حالياً</p>
+                <p style="color: #999;">يرجى العودة لاحقاً أو تصفح المتاجر الأخرى</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+{% comment %} <section style="background: linear-gradient(135deg, #c41430 0%, #E31837 100%); color: white; padding: 4rem 0; margin-top: 4rem;">
+    <div class="container-fluid text-center">
+        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">
+            هل أنت بائع؟
+        </h2>
+        <p style="font-size: 1.1rem; margin-bottom: 2rem; color: rgba(255, 255, 255, 0.8);">
+            انضم إلى منصتنا وابدأ بيع منتجاتك اليوم
+        </p>
+        <a href="#" class="btn btn-accent">
+            <i class="bi bi-shop"></i> افتح متجرك الآن
+        </a>
+    </div>
+</section> {% endcomment %}
+
 <script>
-    function openImageModal(imageUrl, productName) {
-        if (!imageUrl || imageUrl === '') {
-            return; // لا تفتح الـ modal إذا لم تكن هناك صورة
+function toggleFavorite(btn, storeId) {
+    fetch(`/store/toggle-favorite/${storeId}/`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        const icon = btn.querySelector('i');
+        if (data.is_favorite) {
+            btn.classList.add('active');
+            icon.classList.remove('bi-heart');
+            icon.classList.add('bi-heart-fill');
+            btn.title = 'إزالة من المفضلة';
+        } else {
+            btn.classList.remove('active');
+            icon.classList.remove('bi-heart-fill');
+            icon.classList.add('bi-heart');
+            btn.title = 'إضافة إلى المفضلة';
         }
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImage');
-        modalImg.src = imageUrl;
-        modalImg.alt = productName;
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // منع التمرير عند فتح الـ modal
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function filterByStore(storeId) {
+    if (storeId) {
+        window.location.href = `?store=${storeId}`;
+    } else {
+        window.location.href = '?';
     }
-    
-    function closeImageModal() {
-        const modal = document.getElementById('imageModal');
-        modal.classList.remove('active');
-        document.body.style.overflow = 'auto'; // إعادة التمرير
-    }
-    
-    // إغلاق الـ modal عند الضغط على زر ESC
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeImageModal();
-        }
-    });
-    
-    // دالة إضافة/حذف من المفضلة
-    function toggleFavorite(btn, storeId) {
-        fetch(`/store/toggle-favorite/${storeId}/`, {
-            method: 'GET',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            credentials: 'same-origin'
-        })
-        .then(response => response.json())
-        .then(data => {
-            const icon = btn.querySelector('i');
-            if (data.is_favorite) {
-                btn.classList.add('active');
-                icon.classList.remove('bi-heart');
-                icon.classList.add('bi-heart-fill');
-                btn.title = 'إزالة من المفضلة';
-            } else {
-                btn.classList.remove('active');
-                icon.classList.remove('bi-heart-fill');
-                icon.classList.add('bi-heart');
-                btn.title = 'إضافة إلى المفضلة';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Fallback to normal redirect
-            window.location.href = btn.href;
-        });
-    }
-</script>
+}
+</script> 
 {% endblock %}

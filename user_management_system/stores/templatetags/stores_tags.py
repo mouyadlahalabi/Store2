@@ -1,16 +1,15 @@
-from django import template
-from ..models import FavoriteStore
+﻿from django import template
+from ..models import FavoriteProduct
 
 register = template.Library()
 
-@register.simple_tag(takes_context=True, name='is_favorite')
-def check_is_favorite(context, store_id):
-    """التحقق إذا كان المتجر في قائمة المفضلة"""
+
+@register.simple_tag(takes_context=True, name='is_product_favorite')
+def is_product_favorite(context, product_id):
     request = context.get('request')
     if request and request.user.is_authenticated:
-        return FavoriteStore.objects.filter(
+        return FavoriteProduct.objects.filter(
             user=request.user,
-            store_id=store_id
+            product_id=product_id
         ).exists()
     return False
-

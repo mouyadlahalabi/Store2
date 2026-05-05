@@ -4,15 +4,13 @@
 {% block content %}
 <style>
     :root {
-        --cocoa-light: #D4A574;
-        --cocoa-medium: #B8865B;
-        --cocoa-dark: #8B6F47;
-        --olive-medium: #6B8E23;
+        --max-red: #E31837;
+        --max-red-dark: #c41430;
     }
     
     .size-quantity-row {
         background: #f8f9fa;
-        border: 1px solid var(--cocoa-light);
+        border: 1px solid #e0e0e0;
         border-radius: 8px;
         padding: 1rem;
         margin-bottom: 1rem;
@@ -20,12 +18,12 @@
     
     .size-label {
         font-weight: 600;
-        color: var(--cocoa-dark);
+        color: var(--max-red-dark);
         font-size: 1.1rem;
     }
     
     .stock-info {
-        color: var(--olive-medium);
+        color: var(--max-red);
         font-size: 0.9rem;
     }
 </style>
@@ -70,7 +68,7 @@
                     <form method="post" class="mt-4" id="purchase-form">
                         {% csrf_token %}
                         
-                        <h5 class="mb-3" style="color: var(--cocoa-dark);">
+                        <h5 class="mb-3" style="color: var(--max-red-dark);">
                             <i class="bi bi-rulers"></i> اختر المقاسات والكميات المطلوبة:
                         </h5>
                         

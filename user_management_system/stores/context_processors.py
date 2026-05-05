@@ -1,4 +1,4 @@
-from .models import Store, Cart, Sale
+from .models import Store, Cart, Sale, Category
 
 def store_context(request):
     """
@@ -35,5 +35,15 @@ def store_context(request):
         except Exception:
             # في حالة حدوث أي خطأ، نعيد القيم الافتراضية
             pass
+    
+    # إضافة الفئات للقائمة المنسدلة في الشريط العلوي
+    try:
+        nav_categories = Category.objects.filter(
+            store__approval_status='approved',
+            store__is_active=True
+        ).values_list('name', flat=True).distinct()[:8]
+        context['nav_categories'] = list(nav_categories)
+    except Exception:
+        context['nav_categories'] = []
     
     return context

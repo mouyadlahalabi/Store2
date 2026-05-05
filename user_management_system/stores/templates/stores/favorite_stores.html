@@ -6,16 +6,13 @@
 {% block content %}
 <style>
     :root {
-        --beige-light: #F5E6D3;
-        --beige-medium: #E8D5C4;
-        --beige-dark: #D4C4B0;
-        --olive-dark: #556B2F;
-        --olive-medium: #6B8E23;
-        --olive-light: #7A8B5A;
+        --max-red: #E31837;
+        --max-red-light: #ff4d6d;
+        --max-red-dark: #c41430;
     }
     
     .favorite-stores-header {
-        background: linear-gradient(135deg, var(--olive-dark) 0%, var(--olive-medium) 100%);
+        background: linear-gradient(135deg, var(--max-red-dark) 0%, var(--max-red) 100%);
         color: white;
         padding: 3rem 0;
         margin-bottom: 3rem;
@@ -24,25 +21,25 @@
     }
     
     .store-card {
-        background: var(--beige-medium);
-        border: 1px solid var(--olive-light);
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
         border-radius: 15px;
         overflow: hidden;
         transition: all 0.3s ease;
         height: 100%;
-        box-shadow: 0 5px 15px rgba(85, 107, 47, 0.15);
+        box-shadow: 0 5px 15px rgba(227, 24, 55, 0.1);
     }
     
     .store-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(85, 107, 47, 0.25);
-        border-color: var(--olive-medium);
+        box-shadow: 0 10px 25px rgba(227, 24, 55, 0.2);
+        border-color: var(--max-red);
     }
     
     .store-logo-container {
         height: 250px;
         overflow: hidden;
-        background: var(--beige-light);
+        background: #f5f5f5;
         position: relative;
     }
     
@@ -57,7 +54,7 @@
     }
     
     .store-name {
-        color: var(--olive-dark);
+        color: var(--max-red-dark);
         font-weight: 600;
         font-size: 1.3rem;
         margin-bottom: 0.5rem;
@@ -75,12 +72,12 @@
         justify-content: space-between;
         align-items: center;
         padding-top: 1rem;
-        border-top: 1px solid var(--olive-light);
+        border-top: 1px solid #e0e0e0;
         margin-top: 1rem;
     }
     
     .favorite-btn-card {
-        color: #ff6b6b;
+        color: var(--max-red);
         font-size: 1.5rem;
         text-decoration: none;
         transition: all 0.3s ease;
@@ -91,37 +88,37 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 107, 107, 0.1);
+        background: rgba(227, 24, 55, 0.1);
     }
     
     .favorite-btn-card:hover {
-        background: rgba(255, 107, 107, 0.2);
+        background: rgba(227, 24, 55, 0.2);
         transform: scale(1.1);
-        color: #ff4757;
+        color: var(--max-red-dark);
         text-decoration: none;
     }
     
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
-        background: var(--beige-medium);
+        background: #ffffff;
         border-radius: 15px;
-        border: 2px dashed var(--olive-light);
+        border: 2px dashed #e0e0e0;
     }
     
     .empty-state i {
         font-size: 5rem;
-        color: var(--olive-lighter);
+        color: var(--max-red);
         margin-bottom: 1rem;
     }
     
     .empty-state h3 {
-        color: var(--olive-dark);
+        color: var(--max-red-dark);
         margin-bottom: 1rem;
     }
     
     .btn-view-store {
-        background: var(--olive-medium);
+        background: var(--max-red);
         color: white;
         border: none;
         padding: 0.75rem 1.5rem;
@@ -131,7 +128,7 @@
     }
     
     .btn-view-store:hover {
-        background: var(--olive-dark);
+        background: var(--max-red-dark);
         color: white;
         text-decoration: none;
         transform: translateY(-2px);
@@ -161,7 +158,7 @@
                                 <img src="{{ store.logo.url }}" alt="{{ store.name }}">
                             {% else %}
                                 <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, var(--beige-light) 0%, var(--beige-medium) 100%);">
-                                    <i class="bi bi-shop" style="font-size: 4rem; color: var(--olive-lighter);"></i>
+                                    <i class="bi bi-shop" style="font-size: 4rem; color: var(--max-red);"></i>
                                 </div>
                             {% endif %}
                         </div>

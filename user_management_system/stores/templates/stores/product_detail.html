@@ -1,57 +1,153 @@
-{% extends "base.html" %}
-{% block title %}{{ category.name }}{% endblock %}
+﻿{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - {{ store.name }}{% endblock %}
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="mb-4">قسم: {{ category.name }}</h2>
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'stores:store_front' store.id %}">{{ store.name }}</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'stores:category_detail' store.id product.category.id %}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
 
     <div class="row g-4">
-
-        <!-- بطاقة زر إضافة منتج -->
-        <div class="col-md-3 col-sm-6">
-            <div class="card h-100 d-flex align-items-center justify-content-center">
-                <button class="btn btn-outline-success btn-lg" data-bs-toggle="collapse" data-bs-target="#addProductForm" aria-expanded="false" aria-controls="addProductForm">
-                    +
+        <div class="col-md-5">
+            <div class="card border-0 shadow-sm position-relative">
+                {% if user.is_authenticated and not user.is_admin and not user.is_store_owner %}
+                <button class="btn btn-light position-absolute top-0 end-0 m-2" onclick="toggleFavoriteProduct({{ product.id }}, this)">
+                    <i class="bi {% if is_product_favorite %}bi-heart-fill text-danger{% else %}bi-heart{% endif %}"></i>
                 </button>
+                {% endif %}
+
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="object-fit: cover; height: 350px;">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center bg-light" style="height: 350px;">
+                    <i class="bi bi-image display-4 text-muted"></i>
+                </div>
+                {% endif %}
             </div>
         </div>
 
-        <!-- الفورم داخل collapse -->
-        <div class="collapse col-12" id="addProductForm">
-            <div class="card card-body mb-4">
-                <h5>إضافة منتج جديد</h5>
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-success">حفظ المنتج</button>
-                </form>
-            </div>
-        </div>
+        <div class="col-md-7">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h2 class="card-title mb-2">{{ product.name }}</h2>
+                    <p class="text-muted mb-2">{{ product.category.name }} | {{ store.name }}</p>
+                    <p class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        تقييم المنتج: {{ product.average_rating|floatformat:1 }} / 5 ({{ product.ratings_count }})
+                    </p>
+                    <p class="mb-3 text-warning">
+                        <i class="bi bi-star-fill"></i>
+                        تقييم المتجر: {{ store.average_rating|floatformat:1 }} / 5 ({{ store.ratings_count }})
+                    </p>
 
-        <!-- عرض المنتجات -->
-        {% for product in products %}
-            <div class="col-md-3 col-sm-6">
-                <div class="card h-100">
-                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ product.name }}</h5>
-                        <p class="card-text">{{ product.price }} ر.س</p>
-                        <p class="card-text">المتوفر: {{ product.stock }} قطعة</p>
-                        <p class="card-text">المقاسات: {{ product.sizes }}</p>
+                    {% if product.description %}
+                    <p>{{ product.description }}</p>
+                    {% endif %}
+
+                    <div class="mb-4">
+                        {% if product.is_on_offer %}
+                        <span class="text-decoration-line-through text-muted fs-5 me-2">{{ product.original_price }} ر.س</span>
+                        <span class="fs-3 fw-bold text-danger">{{ product.price }} ر.س</span>
+                        {% else %}
+                        <span class="fs-3 fw-bold">{{ product.price }} ر.س</span>
+                        {% endif %}
                     </div>
-                    <div class="card-footer d-flex justify-content-around">
-                        <a href="{% url 'stores:product_detail' store.id  product.id %}">التفاصيل</a>
-<a href="{% url 'stores:product_edit' store.id product.id %}">تعديل</a>
-<form method="post" action="{% url 'stores:product_delete' store.id product.id %}">
-    {% csrf_token %}
-    <button type="submit">حذف</button>
-</form>
+
+                    <p><i class="bi bi-box-seam"></i> المتوفر: {{ product.get_total_stock }} قطعة</p>
+                    {% if product.sizes %}<p><i class="bi bi-rulers"></i> المقاسات: {{ product.sizes }}</p>{% endif %}
+
+                    <div class="d-flex gap-2 flex-wrap mt-3">
+                        <a href="{% url 'stores:purchase_product' store.id product.id %}" class="btn btn-dark">شراء</a>
+                        <a href="{% url 'stores:category_detail' store.id product.category.id %}" class="btn btn-outline-primary">العودة للقسم</a>
+                    </div>
                 </div>
             </div>
-        {% empty %}
-            <p>لا توجد منتجات في هذا القسم.</p>
-        {% endfor %}
+        </div>
+    </div>
 
+    {% if user.is_authenticated and not user.is_store_owner %}
+    <div class="row mt-4 g-4">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5>قيّم المنتج</h5>
+                    <form method="post" action="{% url 'stores:rate_product' product.id %}">
+                        {% csrf_token %}
+                        <div class="mb-2">{{ product_rating_form.rating }}</div>
+                        <div class="mb-2">{{ product_rating_form.comment }}</div>
+                        <button class="btn btn-dark" type="submit">حفظ تقييم المنتج</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5>قيّم المتجر</h5>
+                    <form method="post" action="{% url 'stores:rate_store' store.id %}">
+                        {% csrf_token %}
+                        <div class="mb-2">{{ store_rating_form.rating }}</div>
+                        <div class="mb-2">{{ store_rating_form.comment }}</div>
+                        <button class="btn btn-outline-dark" type="submit">حفظ تقييم المتجر</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-4 g-4">
+        <div class="col-md-6">
+            <h5 class="mb-3">آخر تقييمات المنتج</h5>
+            <div class="list-group">
+                {% for item in product_ratings %}
+                <div class="list-group-item">
+                    <strong>{{ item.user.username }}</strong>
+                    <span class="text-warning ms-2"><i class="bi bi-star-fill"></i> {{ item.rating }}/5</span>
+                    {% if item.comment %}<p class="mb-0 mt-1">{{ item.comment }}</p>{% endif %}
+                </div>
+                {% empty %}
+                <div class="list-group-item text-muted">لا توجد تقييمات للمنتج بعد.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h5 class="mb-3">آخر تقييمات المتجر</h5>
+            <div class="list-group">
+                {% for item in store_ratings %}
+                <div class="list-group-item">
+                    <strong>{{ item.user.username }}</strong>
+                    <span class="text-warning ms-2"><i class="bi bi-star-fill"></i> {{ item.rating }}/5</span>
+                    {% if item.comment %}<p class="mb-0 mt-1">{{ item.comment }}</p>{% endif %}
+                </div>
+                {% empty %}
+                <div class="list-group-item text-muted">لا توجد تقييمات للمتجر بعد.</div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
+
+<script>
+function toggleFavoriteProduct(productId, btn) {
+    fetch(`/store/toggle-favorite-product/${productId}/`, {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        const icon = btn.querySelector('i');
+        icon.className = data.is_favorite ? 'bi bi-heart-fill text-danger' : 'bi bi-heart';
+    })
+    .catch(() => window.location.reload());
+}
+</script>
 {% endblock %}

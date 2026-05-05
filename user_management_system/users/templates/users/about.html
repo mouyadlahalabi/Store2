@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}حول المتجر - Store{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container-fluid">
+        <h2 class="section-title">حول Store</h2>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <p class="lead">
+                            مرحباً بكم في <strong>Store</strong>، منصتكم الموثوقة للتسوق والموضة.
+                        </p>
+                        <p>
+                            نقدم لكم تجربة تسوق مميزة تجمع بين أفضل المنتجات من متاجر متعددة في مكان واحد. 
+                            تتم مراجعة جميع المتاجر والمنتجات لضمان الجودة والموثوقية.
+                        </p>
+                        <h5 class="mt-4">لماذا تختارنا؟</h5>
+                        <ul>
+                            <li>متاجر متنوعة ومعتمدة</li>
+                            <li>أسعار منافسة وعروض مميزة</li>
+                            <li>شحن مجاني للطلبات فوق 100 ريال</li>
+                            <li>خدمة عملاء متاحة على مدار الساعة</li>
+                        </ul>
+                        <h5 class="mt-4">تواصل معنا</h5>
+                        <p>
+                            <i class="bi bi-telephone text-accent"></i> +966 12 345 6789<br>
+                            <i class="bi bi-envelope text-accent"></i> support@store.com
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="bi bi-lightning"></i> روابط سريعة
+                    </div>
+                    <div class="card-body">
+                        <a href="{% url 'home' %}" class="d-block mb-2"><i class="bi bi-house"></i> الرئيسية</a>
+                        <a href="{% url 'stores:categories_all' %}" class="d-block mb-2"><i class="bi bi-grid"></i> الفئات</a>
+                        <a href="{% url 'stores:offers_list' %}" class="d-block mb-2"><i class="bi bi-tag"></i> العروض</a>
+                        <a href="{% url 'stores:store_list' %}" class="d-block mb-2"><i class="bi bi-shop"></i> المتاجر</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

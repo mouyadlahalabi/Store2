@@ -1,6 +1,14 @@
 from django import forms
 from django.core.exceptions import ValidationError
-from .models import Category, Product, Store, CartItem, ProductSizeStock
+from .models import (
+    Category,
+    Product,
+    Store,
+    CartItem,
+    ProductSizeStock,
+    StoreRating,
+    ProductRating,
+)
 
 
 class StoreCreationForm(forms.ModelForm):
@@ -74,11 +82,15 @@ class ProductForm(forms.ModelForm):
     
     class Meta:
         model = Product
-        fields = ["name", "image", "price", "sizes", "description"]
+        fields = ["name", "image", "price", "original_price", "sizes", "description"]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'اسم المنتج'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'وصف المنتج'}),
-            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'السعر'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'السعر الحالي (بعد الخصم)'}),
+            'original_price': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'السعر الأصلي قبل الخصم (اختياري - لإظهار المنتج في العروض)'
+            }),
             'sizes': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'مثال: S, M, L, XL, XXL'}),
             'image': forms.ClearableFileInput(attrs={'class': 'form-control'}),
         }
@@ -94,6 +106,13 @@ class ProductForm(forms.ModelForm):
                 size_stocks_list.append(f"{size_stock.size}:{size_stock.stock}")
             self.fields['size_stocks'].initial = '\n'.join(size_stocks_list)
     
+    def clean_original_price(self):
+        original = self.cleaned_data.get('original_price')
+        price = self.cleaned_data.get('price')
+        if original is not None and price is not None and original <= price:
+            raise ValidationError('السعر الأصلي يجب أن يكون أكبر من السعر الحالي لإظهار الخصم.')
+        return original
+
     def clean_size_stocks(self):
         """تنظيف وتف Parse حقل المقاسات والكميات"""
         size_stocks_data = self.cleaned_data.get('size_stocks', '')
@@ -149,3 +168,33 @@ class AddToCartForm(forms.ModelForm):
     class Meta:
         model = CartItem
         fields = ['quantity']
+
+
+class StoreRatingForm(forms.ModelForm):
+    class Meta:
+        model = StoreRating
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.Select(
+                choices=[(i, f"{i} / 5") for i in range(1, 6)],
+                attrs={'class': 'form-select'}
+            ),
+            'comment': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'أضف تعليقًا (اختياري)'}
+            ),
+        }
+
+
+class ProductRatingForm(forms.ModelForm):
+    class Meta:
+        model = ProductRating
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.Select(
+                choices=[(i, f"{i} / 5") for i in range(1, 6)],
+                attrs={'class': 'form-select'}
+            ),
+            'comment': forms.Textarea(
+                attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'أضف تعليقًا (اختياري)'}
+            ),
+        }

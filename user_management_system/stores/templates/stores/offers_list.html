@@ -1,0 +1,69 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}العروض - Store{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container-fluid">
+        <h2 class="section-title mb-2">العروض والمنتجات المميزة</h2>
+        <p class="text-muted mb-4">تصفح أحدث المنتجات المخفضة</p>
+
+        <div class="row g-4">
+            {% for product in products %}
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card h-100 position-relative">
+                    {% if user.is_authenticated and not user.is_admin and not user.is_store_owner %}
+                    <button class="btn btn-light btn-sm position-absolute" style="top:10px; left:10px; z-index:3;" onclick="toggleFavoriteProduct({{ product.id }}, this)">
+                        <i class="bi {% if product.id in favorite_product_ids %}bi-heart-fill text-danger{% else %}bi-heart{% endif %}"></i>
+                    </button>
+                    {% endif %}
+
+                    <div style="height: 220px; overflow: hidden; background: var(--bg-light); position: relative;">
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="card-img-top" style="height: 100%; object-fit: cover;">
+                        {% else %}
+                            <div class="d-flex align-items-center justify-content-center h-100">
+                                <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                            </div>
+                        {% endif %}
+                        <span class="badge bg-danger position-absolute px-3 py-2" style="top: 10px; right: 10px;">خصم {{ product.get_discount_percent }}%</span>
+                    </div>
+                    <div class="card-body">
+                        <span class="badge badge-accent mb-2">{{ product.store.name }}</span>
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text mb-2">
+                            <span class="text-decoration-line-through text-muted me-2">{{ product.original_price }} ر.س</span>
+                            <span class="fw-bold text-danger">{{ product.price }} ر.س</span>
+                        </p>
+                        <p class="small text-warning mb-0"><i class="bi bi-star-fill"></i> {{ product.average_rating|floatformat:1 }} ({{ product.ratings_count }})</p>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <a href="{% url 'stores:product_detail' product.store.id product.id %}" class="btn btn-outline-primary btn-sm w-100">عرض المنتج</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">لا توجد عروض متاحة حاليًا.</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<script>
+function toggleFavoriteProduct(productId, btn) {
+    fetch(`/store/toggle-favorite-product/${productId}/`, {
+        method: 'GET',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        const icon = btn.querySelector('i');
+        icon.className = data.is_favorite ? 'bi bi-heart-fill text-danger' : 'bi bi-heart';
+    })
+    .catch(() => window.location.reload());
+}
+</script>
+{% endblock %}

@@ -18,7 +18,7 @@
                         {% if user.profile_picture %}
                             <img src="{{ user.profile_picture.url }}" alt="صورة المستخدم" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
                         {% else %}
-                            <i class="bi bi-person-circle mb-3" style="font-size: 8rem; color: #667eea;"></i>
+                            <i class="bi bi-person-circle mb-3" style="font-size: 8rem; color: var(--primary);"></i>
                         {% endif %}
                         <div>
                             <label for="{{ form.profile_picture.id_for_label }}" class="form-label">صورة الملف الشخصي</label>

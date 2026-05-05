@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}الفئات - Store{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container-fluid">
+        <h2 class="section-title">تصفح حسب الفئة</h2>
+        <p class="text-muted mb-4">اختر الفئة التي تريد تصفح منتجاتها</p>
+        <div class="row g-4">
+            {% for cat in categories %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'stores:category_products_by_name' cat.name %}" class="card text-decoration-none text-dark h-100" style="transition: all 0.3s ease;">
+                    <div class="card-body d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="card-title mb-1">{{ cat.name }}</h5>
+                            <p class="card-text text-muted mb-0">
+                                <i class="bi bi-bag"></i> {{ cat.product_count }} منتج
+                            </p>
+                        </div>
+                        <i class="bi bi-arrow-left-circle text-accent" style="font-size: 2rem;"></i>
+                    </div>
+                </a>
+            </div>
+            {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> لا توجد فئات متاحة حالياً.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

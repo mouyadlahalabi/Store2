@@ -18,7 +18,7 @@
                         {% if store.logo %}
                             <img src="{{ store.logo.url }}" alt="شعار {{ store.name }}" class="rounded mb-3" style="width: 150px; height: 150px; object-fit: cover;">
                         {% else %}
-                            <i class="bi bi-shop mb-3" style="font-size: 6rem; color: #667eea;"></i>
+                            <i class="bi bi-shop mb-3" style="font-size: 6rem; color: var(--primary);"></i>
                         {% endif %}
                         <div>
                             <label for="{{ form.logo.id_for_label }}" class="form-label">شعار المتجر</label>
